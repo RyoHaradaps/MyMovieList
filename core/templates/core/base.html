@@ -8,7 +8,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-900 text-white flex justify-center items-center min-h-screen">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen">
+
+    <!-- ✅ NAVBAR GOES HERE -->
+    {% include 'core/navbar.html' %}
+
+    <!-- ✅ TOAST MESSAGES -->
     {% if messages %}
     <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md">
         {% for message in messages %}
@@ -21,8 +26,8 @@
               bg-yellow-800 text-yellow-100
             {% else %}
               bg-indigo-800 text-indigo-100
-            {% endif %}
-          " role="alert">
+            {% endif %}"
+             role="alert">
             <span class="flex rounded-full bg-indigo-500 uppercase px-2 py-1 text-xs font-bold mr-3">
                 {{ message.tags|title }}
             </span>
@@ -41,7 +46,11 @@
         }, 4000);
     </script>
     {% endif %}
-    {% block content %}{% endblock %}
-</body>
 
+    <!-- ✅ MAIN CONTENT BLOCK -->
+    <main class="px-4 py-6 sm:px-8">
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
 </html>

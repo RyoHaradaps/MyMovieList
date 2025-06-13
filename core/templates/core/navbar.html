@@ -1,0 +1,39 @@
+<nav class="bg-gray-900 text-white shadow px-6 py-3 flex items-center justify-between">
+    <!-- Logo & Brand -->
+    <div class="flex items-center gap-3">
+        <svg class="w-8 h-8 text-sky-500" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 
+        10 10 10-4.48 10-10S17.52 2 12 2zm0 3a1 
+        1 0 011 1v6a1 1 0 01-1 1H7a1 1 0 
+        010-2h4V6a1 1 0 011-1zm0 14c-2.67 
+        0-5.14-1.05-7.07-2.93a9.96 9.96 0 
+        01-2.2-3.34 1 1 0 011.87-.74c.4.99 
+        1 1.9 1.74 2.65A7.961 7.961 0 0012 
+        18c1.77 0 3.42-.57 4.73-1.53a8.046 
+        8.046 0 002.37-3.07 1 1 0 
+        011.84.8 9.988 9.988 0 01-2.88 
+        3.72A9.931 9.931 0 0112 19z" />
+        </svg>
+        <span class="font-bold text-2xl tracking-tight">MyMovieList</span>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="flex gap-6 items-center">
+        <a href="{% url 'index' %}" class="hover:text-sky-400 font-semibold transition">Movie</a>
+        <a href="#" class="hover:text-sky-400 font-semibold transition">Series</a>
+        <a href="#" class="hover:text-sky-400 font-semibold transition">MiniSeries</a>
+        <a href="#" class="hover:text-sky-400 font-semibold transition">AnimatedShow</a>
+        <a href="#" class="hover:text-sky-400 font-semibold transition">CartoonComic</a>
+    </div>
+
+    <!-- User Section -->
+    <div class="flex items-center gap-4 text-sm">
+        {% if profile %}
+        <span class="font-semibold">Hello, {{ profile.username }}</span>
+        <a href="{% url 'logout' %}" class="text-sky-400 hover:underline">Logout</a>
+        {% else %}
+        <a href="{% url 'login' %}" class="text-sky-400 hover:underline">Login</a>
+        <a href="{% url 'register' %}" class="text-sky-400 hover:underline">Register</a>
+        {% endif %}
+    </div>
+</nav>
