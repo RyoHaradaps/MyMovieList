@@ -57,7 +57,7 @@ def register_view(request):
         messages.success(request, "Account created successfully")
         return redirect('login')
 
-    return render(request, 'core/register.html', {'months': months})
+    return render(request, 'core/register.html', {'months': months, 'hide_navbar': True})
 
 
 def login_view(request):
@@ -77,9 +77,7 @@ def login_view(request):
             messages.error(request, "Invalid credentials")
 
         return redirect('login')
-
-    return render(request, 'core/login.html')
-
+    return render(request, 'core/login.html', {'hide_navbar': True})
 
 def logout_view(request):
     request.session.flush()

@@ -11,11 +11,13 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen">
 
     <!-- ✅ NAVBAR GOES HERE -->
+    {% if not hide_navbar %}
     {% include 'core/navbar.html' %}
+    {% endif %}
 
     <!-- ✅ TOAST MESSAGES -->
     {% if messages %}
-    <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md">
+    <div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-xs flex flex-col items-center space-y-2">
         {% for message in messages %}
         <div class="mb-2 p-4 rounded-lg flex items-center
             {% if message.tags == 'success' %}
@@ -26,8 +28,7 @@
               bg-yellow-800 text-yellow-100
             {% else %}
               bg-indigo-800 text-indigo-100
-            {% endif %}"
-             role="alert">
+            {% endif %}" role="alert">
             <span class="flex rounded-full bg-indigo-500 uppercase px-2 py-1 text-xs font-bold mr-3">
                 {{ message.tags|title }}
             </span>
@@ -40,7 +41,7 @@
     </div>
     <script>
         setTimeout(function () {
-            document.querySelectorAll('.fixed.top-4').forEach(function (el) {
+            document.querySelectorAll('.fixed.bottom-8').forEach(function (el) {
                 el.style.display = 'none';
             });
         }, 4000);
@@ -53,4 +54,5 @@
     </main>
 
 </body>
+
 </html>
