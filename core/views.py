@@ -95,3 +95,7 @@ def home_view(request):
 def search(request):
     # Dummy implementation, just renders the index page for now
     return render(request, 'core/index.html', {'movies': []})
+
+def movies_view(request):
+    movies = BaseContent.objects.filter(content_type='movie')
+    return render(request, 'core/movies.html', {'movies': movies})
