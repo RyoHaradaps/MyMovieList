@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from .models import BaseContent, Profile, Watchlist
 from datetime import datetime
 from django.contrib.auth.hashers import make_password, check_password
+from django.db import models
 
 # Create your views here.
 def index(request):
@@ -124,25 +125,29 @@ def profile(request, username):
     profile = get_object_or_404(Profile, username=username)
     watchlist = Watchlist.objects.filter(profile=profile)
 
-    # Content stats (movies, series, miniseries, animatedshow)
+    # Content types
     content_types = ['movie', 'series', 'miniseries', 'animatedshow']
+
+    # Stats
     stats = {
-        'watching': watchlist.filter(content__content_type__in=content_types, content__genre__icontains='watching').count(),
-        'completed': watchlist.filter(content__content_type__in=content_types, content__genre__icontains='completed').count(),
-        'on_hold': watchlist.filter(content__content_type__in=content_types, content__genre__icontains='on-hold').count(),
-        'dropped': watchlist.filter(content__content_type__in=content_types, content__genre__icontains='dropped').count(),
-        'plan_to_watch': watchlist.filter(content__content_type__in=content_types, content__genre__icontains='plan').count(),
+        'watching': watchlist.filter(content__content_type__in=content_types, status='watching').count(),
+        'completed': watchlist.filter(content__content_type__in=content_types, status='completed').count(),
+        'on_hold': watchlist.filter(content__content_type__in=content_types, status='on_hold').count(),
+        'dropped': watchlist.filter(content__content_type__in=content_types, status='dropped').count(),
+        'plan_to_watch': watchlist.filter(content__content_type__in=content_types, status='plan').count(),
         'total': watchlist.filter(content__content_type__in=content_types).count(),
+        'mean_score': watchlist.filter(content__content_type__in=content_types, score__isnull=False).aggregate(models.Avg('score'))['score__avg'] or 0,
     }
 
     # Comic stats
     comic_stats = {
-        'reading': watchlist.filter(content__content_type='comic', content__genre__icontains='reading').count(),
-        'completed': watchlist.filter(content__content_type='comic', content__genre__icontains='completed').count(),
-        'on_hold': watchlist.filter(content__content_type='comic', content__genre__icontains='on-hold').count(),
-        'dropped': watchlist.filter(content__content_type='comic', content__genre__icontains='dropped').count(),
-        'plan_to_read': watchlist.filter(content__content_type='comic', content__genre__icontains='plan').count(),
+        'reading': watchlist.filter(content__content_type='comic', status='watching').count(),
+        'completed': watchlist.filter(content__content_type='comic', status='completed').count(),
+        'on_hold': watchlist.filter(content__content_type='comic', status='on_hold').count(),
+        'dropped': watchlist.filter(content__content_type='comic', status='dropped').count(),
+        'plan_to_read': watchlist.filter(content__content_type='comic', status='plan').count(),
         'total': watchlist.filter(content__content_type='comic').count(),
+        'mean_score': watchlist.filter(content__content_type='comic', score__isnull=False).aggregate(models.Avg('score'))['score__avg'] or 0,
     }
 
     # Last content updates (not comics)
@@ -162,3 +167,28 @@ def profile(request, username):
         'last_comic_updates': last_comic_updates,
     }
     return render(request, 'core/profile.html', context)
+
+def profile_edit(request):
+    profile_id = request.session.get('profile_id')
+    if not profile_id:
+        messages.error(request, "You must be logged in to edit your profile.")
+        return redirect('login')
+    profile = Profile.objects.get(id=profile_id)
+
+    if request.method == 'POST':
+        if request.POST.get('remove_avatar'):
+            if profile.avatar:
+                profile.avatar.delete(save=False)
+                profile.avatar = None
+                profile.save()
+                messages.success(request, "Avatar removed successfully!")
+            return redirect('profile_edit')
+        if request.FILES.get('avatar'):
+            profile.avatar = request.FILES['avatar']
+        profile.bio = request.POST.get('bio', '')
+        profile.gender = request.POST.get('gender', '')
+        profile.save()
+        messages.success(request, "Profile updated successfully!")
+        return redirect('profile', username=profile.username)
+
+    return render(request, 'core/profile_edit.html', {'profile': profile})

@@ -11,6 +11,7 @@ urlpatterns = [
     path('search/', views.search, name='search'),  # <-- Add this line
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),  # <-- Add this line
     path('movies/', views.movies_view, name='movies'),
+    path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('profile/<str:username>/', views.profile, name='profile'),
     # path('series/', views.series, name='series'),
     # path('watchlist/', views.watchlist, name='watchlist'),
