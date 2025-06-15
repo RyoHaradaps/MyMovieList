@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import Profile, Watchlist
+from .models import BaseContent, Profile, Watchlist
 from datetime import datetime
 from django.contrib.auth.hashers import make_password, check_password
 
