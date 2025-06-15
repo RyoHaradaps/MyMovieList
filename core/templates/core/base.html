@@ -17,7 +17,7 @@
 
     <!-- ✅ TOAST MESSAGES -->
     {% if messages %}
-    <div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-xs flex flex-col items-center space-y-2">
+    <div class="fixed bottom-8 right-8 z-50 w-full max-w-xs flex flex-col items-end space-y-2">
         {% for message in messages %}
         <div class="mb-2 p-4 rounded-lg flex items-center
             {% if message.tags == 'success' %}
@@ -41,7 +41,7 @@
     </div>
     <script>
         setTimeout(function () {
-            document.querySelectorAll('.fixed.bottom-8').forEach(function (el) {
+            document.querySelectorAll('.fixed.top-8').forEach(function (el) {
                 el.style.display = 'none';
             });
         }, 4000);
@@ -52,6 +52,32 @@
     <main class="px-4 py-6 sm:px-8">
         {% block content %}{% endblock %}
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btn = document.getElementById('profileDropdownBtn');
+            const menu = document.getElementById('profileDropdownMenu');
+            const wrapper = document.getElementById('profileDropdownWrapper');
+            let isOpen = false;
+
+            if (btn && menu && wrapper) {
+                // Toggle on click
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    isOpen = !isOpen;
+                    menu.classList.toggle('hidden', !isOpen);
+                });
+
+                // Close on click outside
+                document.addEventListener('click', function (e) {
+                    if (isOpen && !wrapper.contains(e.target)) {
+                        menu.classList.add('hidden');
+                        isOpen = false;
+                    }
+                });
+            }
+        });
+    </script>
 
 </body>
 

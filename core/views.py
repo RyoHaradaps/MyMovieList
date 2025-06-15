@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import Profile
+from .models import Profile, Watchlist
 from datetime import datetime
 from django.contrib.auth.hashers import make_password, check_password
 
@@ -99,3 +99,13 @@ def search(request):
 def movies_view(request):
     movies = BaseContent.objects.filter(content_type='movie')
     return render(request, 'core/movies.html', {'movies': movies})
+
+def profile(request, username):
+    user = get_object_or_404(User, username=username)
+    profile = get_object_or_404(Profile, username=username)
+    watchlist = Watchlist.objects.filter(profile=profile)
+    context = {
+        'profile': profile,
+        'watchlist': watchlist,
+    }
+    return render(request, 'core/profile.html', context)
