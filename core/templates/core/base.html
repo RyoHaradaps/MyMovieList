@@ -41,7 +41,7 @@
     </div>
     <script>
         setTimeout(function () {
-            document.querySelectorAll('.fixed.top-8').forEach(function (el) {
+            document.querySelectorAll('.fixed.z-50').forEach(function (el) {
                 el.style.display = 'none';
             });
         }, 4000);
@@ -55,24 +55,42 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Profile dropdown
             const btn = document.getElementById('profileDropdownBtn');
             const menu = document.getElementById('profileDropdownMenu');
             const wrapper = document.getElementById('profileDropdownWrapper');
             let isOpen = false;
 
             if (btn && menu && wrapper) {
-                // Toggle on click
                 btn.addEventListener('click', function (e) {
                     e.stopPropagation();
                     isOpen = !isOpen;
                     menu.classList.toggle('hidden', !isOpen);
                 });
-
-                // Close on click outside
                 document.addEventListener('click', function (e) {
                     if (isOpen && !wrapper.contains(e.target)) {
                         menu.classList.add('hidden');
                         isOpen = false;
+                    }
+                });
+            }
+
+            // Hamburger (bars) dropdown
+            const barsBtn = document.getElementById('listDropdownBtn');
+            const barsMenu = document.getElementById('listDropdownMenu');
+            const barsWrapper = document.getElementById('listDropdownWrapper');
+            let barsOpen = false;
+
+            if (barsBtn && barsMenu && barsWrapper) {
+                barsBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    barsOpen = !barsOpen;
+                    barsMenu.classList.toggle('hidden', !barsOpen);
+                });
+                document.addEventListener('click', function (e) {
+                    if (barsOpen && !barsWrapper.contains(e.target)) {
+                        barsMenu.classList.add('hidden');
+                        barsOpen = false;
                     }
                 });
             }

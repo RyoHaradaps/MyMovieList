@@ -17,7 +17,27 @@ def index(request):
             profile = Profile.objects.get(id=profile_id)
         except Profile.DoesNotExist:
             profile = None
-    return render(request, 'core/index.html', {'profile': profile, 'movies': []})
+    trending = BaseContent.objects.filter(content_type='movie')[:5]
+    top_airing = BaseContent.objects.filter(content_type='tv')[:5]
+    latest_episodes = BaseContent.objects.filter(content_type='episode')[:5]
+    upcoming = BaseContent.objects.filter(content_type='movie')[:5]
+    top_rated = BaseContent.objects.filter(content_type='movie')[:5]
+    featured = BaseContent.objects.filter(content_type='movie')[:5]
+    watchlist_ids = []
+    if profile:
+        watchlist = Watchlist.objects.filter(profile=profile)
+        watchlist_ids = [item.content_id for item in watchlist]
+    context = {
+        'trending': trending,
+        'top_airing': top_airing,
+        'latest_episodes': latest_episodes,
+        'upcoming': upcoming,
+        'top_rated': top_rated,
+        'featured': featured,
+        'watchlist_ids': watchlist_ids,
+        'notification_count': 0,  # Set to 0 for now; update with real count later
+    }
+    return render(request, 'core/index.html', context)
 
 def register_view(request):
     months = [

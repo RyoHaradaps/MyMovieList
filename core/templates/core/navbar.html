@@ -26,8 +26,41 @@
         <a href="#" class="hover:text-sky-400 font-semibold transition">CartoonComic</a>
     </div>
 
-    <!-- User Section -->
-    <div class="flex items-center gap-4 text-sm">
+    <!-- Icons Section (right side of navbar) -->
+    <div class="flex items-center gap-4 text-lg">
+        <!-- Hamburger Dropdown -->
+        <div class="relative" id="listDropdownWrapper">
+            <button id="listDropdownBtn" class="hover:text-sky-400 transition focus:outline-none">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div id="listDropdownMenu"
+                class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-2 hidden z-50">
+                <a href="#" class="block px-4 py-2 hover:bg-gray-700">Movie List</a>
+                <a href="#" class="block px-4 py-2 hover:bg-gray-700">Series List</a>
+                <a href="#" class="block px-4 py-2 hover:bg-gray-700">Miniseries List</a>
+                <a href="#" class="block px-4 py-2 hover:bg-gray-700">AnimatedShow List</a>
+                <a href="#" class="block px-4 py-2 hover:bg-gray-700">CartoonComic List</a>
+            </div>
+        </div>
+        <!-- Inbox Icon -->
+        <a href="#" class="hover:text-sky-400 transition" title="Messages">
+            <i class="fas fa-envelope"></i>
+        </a>
+        <!-- Notification Bell -->
+        <a href="#" class="hover:text-sky-400 transition relative" title="Notifications">
+            <i class="fas fa-bell"></i>
+            {% if notification_count and notification_count > 0 %}
+            <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">{{ notification_count
+                }}</span>
+            {% endif %}
+        </a>
+        <!-- Search Box -->
+        <form action="{% url 'search' %}" method="get" class="relative">
+            <input type="text" name="q" placeholder="Search..."
+                class="bg-gray-700 text-white rounded pl-8 pr-2 py-1 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            <i class="fas fa-search absolute left-2 top-2.5 text-gray-400"></i>
+        </form>
+        <!-- Profile Dropdown (already present) -->
         {% if profile %}
         <div class="relative" id="profileDropdownWrapper">
             <button id="profileDropdownBtn"
