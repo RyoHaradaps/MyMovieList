@@ -1,0 +1,107 @@
+{% extends "core/base.html" %}
+{% block title %}{{ profile.username }}'s Profile - MyMovieList{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+    <!-- Sidebar -->
+    <aside class="w-full md:w-1/4 bg-gray-800 rounded-lg p-6 flex flex-col items-center">
+        <div class="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center mb-4 overflow-hidden">
+            {% if profile.avatar_url %}
+            <img src="{{ profile.avatar_url }}" alt="{{ profile.username }}" class="object-cover w-full h-full">
+            {% else %}
+            <span class="text-gray-400 text-4xl">+</span>
+            {% endif %}
+        </div>
+        <h1 class="text-2xl font-bold text-white mb-2">{{ profile.username }}</h1>
+        <p class="text-gray-400 text-sm mb-2">{{ profile.bio|default:"No biography yet." }}</p>
+        <div class="text-xs text-gray-400 mb-2">Joined: {{ profile.join_date|date:"M d, Y" }}</div>
+        <div class="flex gap-2 mb-4">
+            <button class="bg-gray-700 p-2 rounded hover:bg-gray-600"><i class="fas fa-comment"></i></button>
+            <button class="bg-gray-700 p-2 rounded hover:bg-gray-600"><i class="fas fa-envelope"></i></button>
+            <button class="bg-gray-700 p-2 rounded hover:bg-gray-600"><i class="fas fa-user-friends"></i></button>
+            <button class="bg-gray-700 p-2 rounded hover:bg-gray-600"><i class="fas fa-gift"></i></button>
+        </div>
+        <nav class="w-full">
+            <ul class="space-y-2">
+                <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">Statistics</a></li>
+                <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">History</a></li>
+                <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">Favorites</a></li>
+                <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">Reviews</a></li>
+                <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">Recommendations</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="flex-1">
+        <!-- Statistics -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-white mb-4">Statistics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Content Stats -->
+                <div>
+                    <h3 class="text-lg font-semibold text-sky-400 mb-2">Content Stats</h3>
+                    <ul class="text-gray-300 text-sm space-y-1">
+                        <li>Watching: {{ stats.watching }}</li>
+                        <li>Completed: {{ stats.completed }}</li>
+                        <li>On-Hold: {{ stats.on_hold }}</li>
+                        <li>Dropped: {{ stats.dropped }}</li>
+                        <li>Plan to Watch: {{ stats.plan_to_watch }}</li>
+                        <li>Total Entries: {{ stats.total }}</li>
+                    </ul>
+                </div>
+                <!-- Comic Stats -->
+                <div>
+                    <h3 class="text-lg font-semibold text-purple-400 mb-2">Comic Stats</h3>
+                    <ul class="text-gray-300 text-sm space-y-1">
+                        <li>Reading: {{ comic_stats.reading }}</li>
+                        <li>Completed: {{ comic_stats.completed }}</li>
+                        <li>On-Hold: {{ comic_stats.on_hold }}</li>
+                        <li>Dropped: {{ comic_stats.dropped }}</li>
+                        <li>Plan to Read: {{ comic_stats.plan_to_read }}</li>
+                        <li>Total Entries: {{ comic_stats.total }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Last Content Updates -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-white mb-4">Last Content Updates</h2>
+            <div class="space-y-4">
+                {% for update in last_content_updates %}
+                <div class="flex items-center gap-4">
+                    <img src="{{ update.poster_url }}" alt="{{ update.title }}" class="w-12 h-16 object-cover rounded">
+                    <div>
+                        <div class="text-white font-semibold">{{ update.title }}</div>
+                        <div class="text-gray-400 text-xs">{{ update.status }} • {{ update.updated_at|date:'M d, Y H:i'
+                            }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-gray-400">No recent updates.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Last Comic Updates -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-bold text-white mb-4">Last Comic Updates</h2>
+            <div class="space-y-4">
+                {% for update in last_comic_updates %}
+                <div class="flex items-center gap-4">
+                    <img src="{{ update.poster_url }}" alt="{{ update.title }}" class="w-12 h-16 object-cover rounded">
+                    <div>
+                        <div class="text-white font-semibold">{{ update.title }}</div>
+                        <div class="text-gray-400 text-xs">{{ update.status }} • {{ update.updated_at|date:'M d, Y H:i'
+                            }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-gray-400">No recent comic updates.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

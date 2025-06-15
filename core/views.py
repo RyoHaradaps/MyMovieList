@@ -121,11 +121,44 @@ def movies_view(request):
     return render(request, 'core/movies.html', {'movies': movies})
 
 def profile(request, username):
-    user = get_object_or_404(User, username=username)
     profile = get_object_or_404(Profile, username=username)
     watchlist = Watchlist.objects.filter(profile=profile)
+
+    # Content stats (movies, series, miniseries, animatedshow)
+    content_types = ['movie', 'series', 'miniseries', 'animatedshow']
+    stats = {
+        'watching': watchlist.filter(content__content_type__in=content_types, content__genre__icontains='watching').count(),
+        'completed': watchlist.filter(content__content_type__in=content_types, content__genre__icontains='completed').count(),
+        'on_hold': watchlist.filter(content__content_type__in=content_types, content__genre__icontains='on-hold').count(),
+        'dropped': watchlist.filter(content__content_type__in=content_types, content__genre__icontains='dropped').count(),
+        'plan_to_watch': watchlist.filter(content__content_type__in=content_types, content__genre__icontains='plan').count(),
+        'total': watchlist.filter(content__content_type__in=content_types).count(),
+    }
+
+    # Comic stats
+    comic_stats = {
+        'reading': watchlist.filter(content__content_type='comic', content__genre__icontains='reading').count(),
+        'completed': watchlist.filter(content__content_type='comic', content__genre__icontains='completed').count(),
+        'on_hold': watchlist.filter(content__content_type='comic', content__genre__icontains='on-hold').count(),
+        'dropped': watchlist.filter(content__content_type='comic', content__genre__icontains='dropped').count(),
+        'plan_to_read': watchlist.filter(content__content_type='comic', content__genre__icontains='plan').count(),
+        'total': watchlist.filter(content__content_type='comic').count(),
+    }
+
+    # Last content updates (not comics)
+    last_content_updates = watchlist.filter(content__content_type__in=content_types).order_by('-added_on')[:5]
+    last_content_updates = [w.content for w in last_content_updates]
+
+    # Last comic updates
+    last_comic_updates = watchlist.filter(content__content_type='comic').order_by('-added_on')[:5]
+    last_comic_updates = [w.content for w in last_comic_updates]
+
     context = {
         'profile': profile,
         'watchlist': watchlist,
+        'stats': stats,
+        'comic_stats': comic_stats,
+        'last_content_updates': last_content_updates,
+        'last_comic_updates': last_comic_updates,
     }
     return render(request, 'core/profile.html', context)
