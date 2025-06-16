@@ -24,7 +24,7 @@
         <nav class="w-full">
             <ul class="space-y-2">
                 <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">Statistics</a></li>
-                <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">History</a></li>
+                <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">Content History</a></li>
                 <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">Favorites</a></li>
                 <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">Reviews</a></li>
                 <li><a href="#" class="block px-4 py-2 rounded hover:bg-gray-700">Recommendations</a></li>
@@ -42,72 +42,158 @@
         </a>
         {% endif %}
 
-        <!-- Statistics -->
-        <div class="bg-gray-800 rounded-lg p-6 mb-8">
-            <h2 class="text-xl font-bold text-white mb-4">Statistics</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Content Stats -->
-                <div>
-                    <h3 class="text-lg font-semibold text-sky-400 mb-2">Content Stats</h3>
-                    <ul class="text-gray-300 text-sm space-y-1">
-                        <li>Watching: {{ stats.watching }}</li>
-                        <li>Completed: {{ stats.completed }}</li>
-                        <li>On-Hold: {{ stats.on_hold }}</li>
-                        <li>Dropped: {{ stats.dropped }}</li>
-                        <li>Plan to Watch: {{ stats.plan_to_watch }}</li>
-                        <li>Total Entries: {{ stats.total }}</li>
-                    </ul>
+        <!-- Statistics and Last Updates MAL-style -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Anime Stats -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-bold text-white">Content Stats</h2>
+                    <a href="#" class="text-xs text-sky-400 hover:underline">All Content Stats</a>
                 </div>
-                <!-- Comic Stats -->
-                <div>
-                    <h3 class="text-lg font-semibold text-purple-400 mb-2">Comic Stats</h3>
-                    <ul class="text-gray-300 text-sm space-y-1">
-                        <li>Reading: {{ comic_stats.reading }}</li>
-                        <li>Completed: {{ comic_stats.completed }}</li>
-                        <li>On-Hold: {{ comic_stats.on_hold }}</li>
-                        <li>Dropped: {{ comic_stats.dropped }}</li>
-                        <li>Plan to Read: {{ comic_stats.plan_to_read }}</li>
-                        <li>Total Entries: {{ comic_stats.total }}</li>
-                    </ul>
+                <div class="flex justify-between text-gray-300 text-sm mb-1">
+                    <span>Days: <span class="font-bold">{{ stats.days }}</span></span>
+                    <span>Mean Score: <span class="font-bold">{{ stats.mean_score }}</span></span>
+                </div>
+                <div class="w-full h-4 bg-gray-700 rounded overflow-hidden mb-2">
+                    <div class="h-full bg-blue-500" style="width: {{ stats.completed_percent }}%;"></div>
+                </div>
+                <div class="flex flex-row text-xs gap-x-8">
+                    <!-- Left column: Statuses -->
+                    <div class="grid grid-cols-2 w-1/2 gap-y-1">
+                        <div class="flex items-center text-gray-300">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Watching
+                        </div>
+                        <div class="text-right font-bold text-gray-300">{{ stats.watching }}</div>
+                        <div class="flex items-center text-gray-300">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>Completed
+                        </div>
+                        <div class="text-right font-bold text-gray-300">{{ stats.completed }}</div>
+                        <div class="flex items-center text-gray-300">
+                            <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>On-Hold
+                        </div>
+                        <div class="text-right font-bold text-gray-300">{{ stats.on_hold }}</div>
+                        <div class="flex items-center text-gray-300">
+                            <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>Dropped
+                        </div>
+                        <div class="text-right font-bold text-gray-300">{{ stats.dropped }}</div>
+                        <div class="flex items-center text-gray-300">
+                            <span class="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>Plan to Watch
+                        </div>
+                        <div class="text-right font-bold text-gray-300">{{ stats.plan_to_watch }}</div>
+                    </div>
+                    <!-- Right column: Summary -->
+                    <div class="grid grid-cols-2 w-1/2 gap-y-1 pl-8">
+                        <div class="text-gray-400">Total Entries</div>
+                        <div class="text-right font-bold text-gray-400">{{ stats.total }}</div>
+                        <div class="text-gray-400">Rewatched</div>
+                        <div class="text-right font-bold text-gray-400">{{ stats.rewatched }}</div>
+                        <div class="text-gray-400">Episodes</div>
+                        <div class="text-right font-bold text-gray-400">{{ stats.episodes }}</div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Last Anime Updates -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-bold text-white">Last Anime Updates</h2>
+                    <a href="#" class="text-xs text-sky-400 hover:underline">Content History</a>
+                </div>
+                <div class="space-y-4">
+                    {% for update in last_content_updates %}
+                    <div class="flex items-center gap-4">
+                        <img src="{{ update.poster_url }}" alt="{{ update.title }}"
+                            class="w-12 h-16 object-cover rounded">
+                        <div>
+                            <div class="text-white font-semibold">{{ update.title }}</div>
+                            <div class="text-gray-400 text-xs">{{ update.status }} • {{ update.updated_at|date:'M d, Y
+                                H:i' }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-gray-400">No recent updates.</div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-
-        <!-- Last Content Updates -->
-        <div class="bg-gray-800 rounded-lg p-6 mb-8">
-            <h2 class="text-xl font-bold text-white mb-4">Last Content Updates</h2>
-            <div class="space-y-4">
-                {% for update in last_content_updates %}
-                <div class="flex items-center gap-4">
-                    <img src="{{ update.poster_url }}" alt="{{ update.title }}" class="w-12 h-16 object-cover rounded">
-                    <div>
-                        <div class="text-white font-semibold">{{ update.title }}</div>
-                        <div class="text-gray-400 text-xs">{{ update.status }} • {{ update.updated_at|date:'M d, Y H:i'
-                            }}</div>
+        <!-- Manga Stats and Last Manga Updates MAL-style -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+            <!-- Manga Stats -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-bold text-white">Comic Stats</h2>
+                    <a href="#" class="text-xs text-purple-400 hover:underline">All Comic Stats</a>
+                </div>
+                <div class="flex justify-between text-gray-300 text-sm mb-1">
+                    <span>Days: <span class="font-bold">{{ comic_stats.days }}</span></span>
+                    <span>Mean Score: <span class="font-bold">{{ comic_stats.mean_score }}</span></span>
+                </div>
+                <div class="w-full h-4 bg-gray-700 rounded overflow-hidden mb-2">
+                    <div class="h-full bg-purple-500" style="width: {{ comic_stats.completed_percent }}%;"></div>
+                </div>
+                <div class="flex flex-row text-xs gap-x-8">
+                    <!-- Left column: Statuses -->
+                    <div class="grid grid-cols-2 w-1/2 gap-y-1">
+                        <div class="flex items-center text-gray-300">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Reading
+                        </div>
+                        <div class="text-right font-bold text-gray-300">{{ comic_stats.reading }}</div>
+                        <div class="flex items-center text-gray-300">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>Completed
+                        </div>
+                        <div class="text-right font-bold text-gray-300">{{ comic_stats.completed }}</div>
+                        <div class="flex items-center text-gray-300">
+                            <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>On-Hold
+                        </div>
+                        <div class="text-right font-bold text-gray-300">{{ comic_stats.on_hold }}</div>
+                        <div class="flex items-center text-gray-300">
+                            <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>Dropped
+                        </div>
+                        <div class="text-right font-bold text-gray-300">{{ comic_stats.dropped }}</div>
+                        <div class="flex items-center text-gray-300">
+                            <span class="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>Plan to Read
+                        </div>
+                        <div class="text-right font-bold text-gray-300">{{ comic_stats.plan_to_read }}</div>
+                    </div>
+                    <!-- Right column: Summary -->
+                    <div class="grid grid-cols-2 w-1/2 gap-y-1 pl-8">
+                        <div class="text-gray-400">Total Entries</div>
+                        <div class="text-right font-bold text-gray-400">{{ comic_stats.total }}</div>
+                        <div class="text-gray-400">Reread</div>
+                        <div class="text-right font-bold text-gray-400">{{ comic_stats.reread }}</div>
+                        <div class="text-gray-400">Chapters</div>
+                        <div class="text-right font-bold text-gray-400">{{ comic_stats.chapters }}</div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
                     </div>
                 </div>
-                {% empty %}
-                <div class="text-gray-400">No recent updates.</div>
-                {% endfor %}
             </div>
-        </div>
-
-        <!-- Last Comic Updates -->
-        <div class="bg-gray-800 rounded-lg p-6">
-            <h2 class="text-xl font-bold text-white mb-4">Last Comic Updates</h2>
-            <div class="space-y-4">
-                {% for update in last_comic_updates %}
-                <div class="flex items-center gap-4">
-                    <img src="{{ update.poster_url }}" alt="{{ update.title }}" class="w-12 h-16 object-cover rounded">
-                    <div>
-                        <div class="text-white font-semibold">{{ update.title }}</div>
-                        <div class="text-gray-400 text-xs">{{ update.status }} • {{ update.updated_at|date:'M d, Y H:i'
-                            }}</div>
-                    </div>
+            <!-- Last Manga Updates -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-bold text-white">Last Manga Updates</h2>
+                    <a href="#" class="text-xs text-purple-400 hover:underline">Comic History</a>
                 </div>
-                {% empty %}
-                <div class="text-gray-400">No recent comic updates.</div>
-                {% endfor %}
+                <div class="space-y-4">
+                    {% for update in last_comic_updates %}
+                    <div class="flex items-center gap-4">
+                        <img src="{{ update.poster_url }}" alt="{{ update.title }}"
+                            class="w-12 h-16 object-cover rounded">
+                        <div>
+                            <div class="text-white font-semibold">{{ update.title }}</div>
+                            <div class="text-gray-400 text-xs">{{ update.status }} • {{ update.updated_at|date:'M d, Y
+                                H:i' }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-gray-400">No recent comic updates.</div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </section>

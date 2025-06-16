@@ -21,7 +21,6 @@ class BaseContent(models.Model):
     CONTENT_TYPES = [
         ('movie', 'Movie'),
         ('series', 'Series'),
-        ('miniseries', 'MiniSeries'),
         ('animatedshow', 'Animated Show'),
         ('comic', 'Cartoon Comic'),
     ]
@@ -56,3 +55,5 @@ class Watchlist(models.Model):
     progress = models.IntegerField(default=0)
     review = models.TextField(blank=True)
     added_on = models.DateTimeField(auto_now_add=True)
+    rewatched = models.IntegerField(default=0)  # for movies/series
+    reread = models.IntegerField(default=0)     # for comics

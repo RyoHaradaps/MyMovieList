@@ -126,36 +126,46 @@ def profile(request, username):
     watchlist = Watchlist.objects.filter(profile=profile)
 
     # Content types
-    content_types = ['movie', 'series', 'miniseries', 'animatedshow']
+    content_types = ['movie', 'series', 'animatedshow']
 
-    # Stats
+    # Stats for content (anime/movies/series)
+    stats_qs = watchlist.filter(content__content_type__in=content_types)
     stats = {
-        'watching': watchlist.filter(content__content_type__in=content_types, status='watching').count(),
-        'completed': watchlist.filter(content__content_type__in=content_types, status='completed').count(),
-        'on_hold': watchlist.filter(content__content_type__in=content_types, status='on_hold').count(),
-        'dropped': watchlist.filter(content__content_type__in=content_types, status='dropped').count(),
-        'plan_to_watch': watchlist.filter(content__content_type__in=content_types, status='plan').count(),
-        'total': watchlist.filter(content__content_type__in=content_types).count(),
-        'mean_score': watchlist.filter(content__content_type__in=content_types, score__isnull=False).aggregate(models.Avg('score'))['score__avg'] or 0,
+        'watching': stats_qs.filter(status='watching').count(),
+        'completed': stats_qs.filter(status='completed').count(),
+        'on_hold': stats_qs.filter(status='on_hold').count(),
+        'dropped': stats_qs.filter(status='dropped').count(),
+        'plan_to_watch': stats_qs.filter(status='plan').count(),
+        'total': stats_qs.count(),
+        'mean_score': round(stats_qs.filter(score__isnull=False).aggregate(models.Avg('score'))['score__avg'] or 0, 2),
+        'rewatched': stats_qs.aggregate(models.Sum('rewatched'))['rewatched__sum'] or 0,
+        'episodes': stats_qs.aggregate(models.Sum('progress'))['progress__sum'] or 0,
     }
+    stats['completed_percent'] = int((stats['completed'] / stats['total']) * 100) if stats['total'] else 0
+    stats['days'] = round((stats['episodes'] / 24), 1) if stats['episodes'] else 0  # assuming 1 episode = 1 hour
 
-    # Comic stats
+    # Stats for comics
+    comic_qs = watchlist.filter(content__content_type='comic')
     comic_stats = {
-        'reading': watchlist.filter(content__content_type='comic', status='watching').count(),
-        'completed': watchlist.filter(content__content_type='comic', status='completed').count(),
-        'on_hold': watchlist.filter(content__content_type='comic', status='on_hold').count(),
-        'dropped': watchlist.filter(content__content_type='comic', status='dropped').count(),
-        'plan_to_read': watchlist.filter(content__content_type='comic', status='plan').count(),
-        'total': watchlist.filter(content__content_type='comic').count(),
-        'mean_score': watchlist.filter(content__content_type='comic', score__isnull=False).aggregate(models.Avg('score'))['score__avg'] or 0,
+        'reading': comic_qs.filter(status='watching').count(),
+        'completed': comic_qs.filter(status='completed').count(),
+        'on_hold': comic_qs.filter(status='on_hold').count(),
+        'dropped': comic_qs.filter(status='dropped').count(),
+        'plan_to_read': comic_qs.filter(status='plan').count(),
+        'total': comic_qs.count(),
+        'mean_score': round(comic_qs.filter(score__isnull=False).aggregate(models.Avg('score'))['score__avg'] or 0, 2),
+        'reread': comic_qs.aggregate(models.Sum('reread'))['reread__sum'] or 0,
+        'chapters': comic_qs.aggregate(models.Sum('progress'))['progress__sum'] or 0,
     }
+    comic_stats['completed_percent'] = int((comic_stats['completed'] / comic_stats['total']) * 100) if comic_stats['total'] else 0
+    comic_stats['days'] = round((comic_stats['chapters'] / 24), 1) if comic_stats['chapters'] else 0  # assuming 1 chapter = 1 hour
 
     # Last content updates (not comics)
-    last_content_updates = watchlist.filter(content__content_type__in=content_types).order_by('-added_on')[:5]
+    last_content_updates = stats_qs.order_by('-added_on')[:5]
     last_content_updates = [w.content for w in last_content_updates]
 
     # Last comic updates
-    last_comic_updates = watchlist.filter(content__content_type='comic').order_by('-added_on')[:5]
+    last_comic_updates = comic_qs.order_by('-added_on')[:5]
     last_comic_updates = [w.content for w in last_comic_updates]
 
     context = {
