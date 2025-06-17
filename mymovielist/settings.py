@@ -132,3 +132,5 @@ LOGIN_URL = "/login/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+TMDB_API_KEY = '172374e15829559e06d62d17c7743aa4'
+COMICVINE_API_KEY = '95fe664f7f94d52b3b5a55acb19edf5fce08149f'
