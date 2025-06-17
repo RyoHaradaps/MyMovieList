@@ -202,3 +202,43 @@ def profile_edit(request):
         return redirect('profile', username=profile.username)
 
     return render(request, 'core/profile_edit.html', {'profile': profile})
+
+def movie_list(request):
+    profile_id = request.session.get('profile_id')
+    profile = Profile.objects.get(id=profile_id) if profile_id else None
+    movies = BaseContent.objects.filter(content_type='movie').order_by('-release_year')
+    return render(request, 'core/list_page.html', {
+        'items': movies,
+        'type': 'Movie',
+        'profile': profile,
+    })
+
+def series_list(request):
+    profile_id = request.session.get('profile_id')
+    profile = Profile.objects.get(id=profile_id) if profile_id else None
+    series = BaseContent.objects.filter(content_type='series').order_by('-release_year')
+    return render(request, 'core/list_page.html', {
+        'items': series,
+        'type': 'Series',
+        'profile': profile,
+    })
+
+def animated_list(request):
+    profile_id = request.session.get('profile_id')
+    profile = Profile.objects.get(id=profile_id) if profile_id else None
+    animated = BaseContent.objects.filter(content_type='animatedshow').order_by('-release_year')
+    return render(request, 'core/list_page.html', {
+        'items': animated,
+        'type': 'Animated',
+        'profile': profile,
+    })
+
+def comic_list(request):
+    profile_id = request.session.get('profile_id')
+    profile = Profile.objects.get(id=profile_id) if profile_id else None
+    comics = BaseContent.objects.filter(content_type='comic').order_by('-release_year')
+    return render(request, 'core/list_page.html', {
+        'items': comics,
+        'type': 'Comic',
+        'profile': profile,
+    })

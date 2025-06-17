@@ -26,6 +26,7 @@
     </div>
 
     <!-- Icons Section (right side of navbar) -->
+    {% if profile %}
     <div class="flex items-center gap-4 text-lg">
         <!-- Hamburger Dropdown -->
         <div class="relative" id="listDropdownWrapper">
@@ -34,11 +35,10 @@
             </button>
             <div id="listDropdownMenu"
                 class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-2 hidden z-50">
-                <a href="#" class="block px-4 py-2 hover:bg-gray-700">Movie List</a>
-                <a href="#" class="block px-4 py-2 hover:bg-gray-700">Series List</a>
-                <a href="#" class="block px-4 py-2 hover:bg-gray-700">Miniseries List</a>
-                <a href="#" class="block px-4 py-2 hover:bg-gray-700">AnimatedShow List</a>
-                <a href="#" class="block px-4 py-2 hover:bg-gray-700">CartoonComic List</a>
+                <a href="{% url 'movie_list' %}" class="block px-4 py-2 hover:bg-gray-700">Movie List</a>
+                <a href="{% url 'series_list' %}" class="block px-4 py-2 hover:bg-gray-700">Series List</a>
+                <a href="{% url 'animated_list' %}" class="block px-4 py-2 hover:bg-gray-700">Animated List</a>
+                <a href="{% url 'comic_list' %}" class="block px-4 py-2 hover:bg-gray-700">Comic List</a>
             </div>
         </div>
         <!-- Inbox Icon -->
@@ -60,7 +60,6 @@
             <i class="fas fa-search absolute left-2 top-2.5 text-gray-400"></i>
         </form>
         <!-- Profile Dropdown (already present) -->
-        {% if profile %}
         <div class="relative" id="profileDropdownWrapper">
             <button id="profileDropdownBtn"
                 class="flex items-center gap-2 font-semibold hover:text-sky-400 transition focus:outline-none">
@@ -81,9 +80,11 @@
                 <a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-gray-700 text-red-400">Logout</a>
             </div>
         </div>
-        {% else %}
+    </div>
+    {% else %}
+    <div class="flex gap-4 items-center">
         <a href="{% url 'login' %}" class="text-sky-400 hover:underline">Login</a>
         <a href="{% url 'register' %}" class="text-sky-400 hover:underline">Register</a>
-        {% endif %}
     </div>
+    {% endif %}
 </nav>

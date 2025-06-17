@@ -1,0 +1,57 @@
+{% extends "core/base.html" %}
+{% block title %}All {{ type }}s - MyMovieList{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-4 text-center uppercase">All {{ type }}s</h1>
+    <div class="flex justify-center mb-4">
+        <div class="flex gap-4 border-b">
+            <a href="#" class="pb-2 px-3 border-b-2 border-sky-500 font-semibold text-sky-500">All</a>
+            <a href="#" class="pb-2 px-3 hover:text-sky-500">Watching</a>
+            <a href="#" class="pb-2 px-3 hover:text-sky-500">Completed</a>
+            <a href="#" class="pb-2 px-3 hover:text-sky-500">On Hold</a>
+            <a href="#" class="pb-2 px-3 hover:text-sky-500">Dropped</a>
+            <a href="#" class="pb-2 px-3 hover:text-sky-500">Plan to Watch</a>
+        </div>
+    </div>
+    <div class="overflow-x-auto rounded-lg shadow">
+        <table class="min-w-full bg-gray-800 text-white">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2">#</th>
+                    <th class="px-4 py-2">Image</th>
+                    <th class="px-4 py-2">Title</th>
+                    <th class="px-4 py-2">Score</th>
+                    <th class="px-4 py-2">Type</th>
+                    <th class="px-4 py-2">Progress</th>
+                    <th class="px-4 py-2">Tags</th>
+                    <th class="px-4 py-2">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="border-b border-gray-700">
+                    <td class="px-4 py-2">{{ forloop.counter }}</td>
+                    <td class="px-4 py-2">
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-12 h-16 object-cover rounded">
+                    </td>
+                    <td class="px-4 py-2 font-semibold">
+                        <a href="#" class="hover:underline">{{ item.title }}</a>
+                    </td>
+                    <td class="px-4 py-2 text-center">-</td>
+                    <td class="px-4 py-2">{{ item.get_content_type_display }}</td>
+                    <td class="px-4 py-2 text-center">-</td>
+                    <td class="px-4 py-2 text-center">-</td>
+                    <td class="px-4 py-2 text-center">
+                        <a href="#" class="text-sky-400 hover:underline">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-gray-400">No {{ type|lower }}s found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -17,4 +17,8 @@ urlpatterns = [
     # path('watchlist/', views.watchlist, name='watchlist'),
     # path('dashboard/', views.dashboard, name='dashboard'),
     path('search/', views.search, name='search'),
+    path('movies/list/', views.movie_list, name='movie_list'),
+    path('series/list/', views.series_list, name='series_list'),
+    path('animated/list/', views.animated_list, name='animated_list'),
+    path('comics/list/', views.comic_list, name='comic_list'),
 ]
