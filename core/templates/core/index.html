@@ -15,24 +15,74 @@
 
   {% extends "core/base.html" %}
 
-  {% block title %}MyMovieList{% endblock %}
+  {% block title %}Welcome to MyMovieList{% endblock %}
 
   {% block content %}
-  <h1 class="text-3xl font-bold mb-6 text-center">Popular Movies</h1>
-
-  <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-    {% for movie in movies %}
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition duration-300 overflow-hidden">
-      <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-full h-56 object-cover" />
-      <div class="p-4">
-        <h2 class="text-lg font-semibold mb-1 truncate">{{ movie.title }}</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 truncate">{{ movie.genre }}</p>
-        <p class="text-xs text-gray-600 dark:text-gray-300">Rating: {{ movie.rating }}/10</p>
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-bold mb-2">Welcome to MyMovieList</h1>
+    <p class="text-lg text-gray-400 mb-4">Track your movies, series, anime, and comics — all in one place!</p>
+  </div>
+  <div>
+    <h2 class="text-2xl font-semibold mb-2">Popular Movies</h2>
+    <div class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth">
+      {% for item in trending %}
+      <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg">
+        <div class="relative">
+          <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-72 object-cover rounded-t-lg" />
+        </div>
+        <div class="p-2">
+          <div class="font-bold text-lg leading-tight mt-2 mb-1">
+            {{ item.title }}
+          </div>
+        </div>
       </div>
+      {% endfor %}
     </div>
-    {% empty %}
-    <p class="text-center col-span-full">No movies found.</p>
-    {% endfor %}
+    <h2 class="text-2xl font-semibold mb-2">Popular Series</h2>
+    <div class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth">
+      {% for item in top_series %}
+      <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg">
+        <div class="relative">
+          <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-72 object-cover rounded-t-lg" />
+        </div>
+        <div class="p-2">
+          <div class="font-bold text-lg leading-tight mt-2 mb-1">
+            {{ item.title }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <h2 class="text-2xl font-semibold mb-2">Popular Animated Shows</h2>
+    <div class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth">
+      {% for item in top_animated %}
+      <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg">
+        <div class="relative">
+          <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-72 object-cover rounded-t-lg" />
+        </div>
+        <div class="p-2">
+          <div class="font-bold text-lg leading-tight mt-2 mb-1">
+            {{ item.title }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <h2 class="text-2xl font-semibold mb-2">Popular Comics</h2>
+    <div class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth">
+      {% for item in top_comics %}
+      <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg">
+        <div class="relative">
+          <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-72 object-cover rounded-t-lg" />
+        </div>
+        <div class="p-2">
+          <div class="font-bold text-lg leading-tight mt-2 mb-1">
+            {{ item.title }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
   {% endblock %}
 

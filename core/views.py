@@ -11,6 +11,11 @@ from django.db import models
 
 # Create your views here.
 def index(request):
+    # Public landing page: show popular content for everyone
+    trending = BaseContent.objects.filter(content_type='movie').order_by('-rating')[:8]
+    top_series = BaseContent.objects.filter(content_type='series').order_by('-rating')[:8]
+    top_animated = BaseContent.objects.filter(content_type='animatedshow').order_by('-rating')[:8]
+    top_comics = BaseContent.objects.filter(content_type='comic').order_by('-rating')[:8]
     profile = None
     profile_id = request.session.get('profile_id')
     if profile_id:
@@ -18,27 +23,13 @@ def index(request):
             profile = Profile.objects.get(id=profile_id)
         except Profile.DoesNotExist:
             profile = None
-    trending = BaseContent.objects.filter(content_type='movie')[:5]
-    top_airing = BaseContent.objects.filter(content_type='tv')[:5]
-    latest_episodes = BaseContent.objects.filter(content_type='episode')[:5]
-    upcoming = BaseContent.objects.filter(content_type='movie')[:5]
-    top_rated = BaseContent.objects.filter(content_type='movie')[:5]
-    featured = BaseContent.objects.filter(content_type='movie')[:5]
-    watchlist_ids = []
-    if profile:
-        watchlist = Watchlist.objects.filter(profile=profile)
-        watchlist_ids = [item.content_id for item in watchlist]
-    context = {
+    return render(request, 'core/index.html', {
         'trending': trending,
-        'top_airing': top_airing,
-        'latest_episodes': latest_episodes,
-        'upcoming': upcoming,
-        'top_rated': top_rated,
-        'featured': featured,
-        'watchlist_ids': watchlist_ids,
-        'notification_count': 0,  # Set to 0 for now; update with real count later
-    }
-    return render(request, 'core/index.html', context)
+        'top_series': top_series,
+        'top_animated': top_animated,
+        'top_comics': top_comics,
+        'profile': profile,
+    })
 
 def register_view(request):
     months = [
@@ -103,15 +94,19 @@ def login_view(request):
 def logout_view(request):
     request.session.flush()
     messages.success(request, "You have been logged out successfully.")
-    return redirect('login')
+    return redirect('index')
 
 def home_view(request):
     profile_id = request.session.get('profile_id')
     if not profile_id:
-        messages.error(request, "You must be logged in to view this page.")
         return redirect('login')
     profile = Profile.objects.get(id=profile_id)
-    return render(request, 'core/index.html', {'profile': profile, 'movies': []})
+    watchlist = Watchlist.objects.filter(profile=profile).select_related('content')[:8]
+    # You can add more personalized queries here (e.g., recommendations)
+    return render(request, 'core/home.html', {
+        'profile': profile,
+        'watchlist': watchlist,
+    })
 
 def search(request):
     # Dummy implementation, just renders the index page for now
