@@ -1,91 +1,194 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
+{% extends "core/base.html" %}
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyMovieList</title>
-  <script>
-    // Enable dark mode by default (you can later improve this with a toggle)
-    document.documentElement.classList.add('dark');
-  </script>
-</head>
+{% block title %}Welcome to MyMovieList{% endblock %}
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen transition duration-300">
-
-  {% extends "core/base.html" %}
-
-  {% block title %}Welcome to MyMovieList{% endblock %}
-
-  {% block content %}
-  <div class="text-center mb-8">
+{% block content %}
+<div class="text-center mb-8">
     <h1 class="text-4xl font-bold mb-2">Welcome to MyMovieList</h1>
     <p class="text-lg text-gray-400 mb-4">Track your movies, series, anime, and comics — all in one place!</p>
-  </div>
-  <div>
+</div>
+<div>
     <h2 class="text-2xl font-semibold mb-2">Popular Movies</h2>
-    <div class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth">
-      {% for item in trending %}
-      <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg">
-        <div class="relative">
-          <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-72 object-cover rounded-t-lg" />
+    <div class="relative group">
+        <button id="carousel-movies-left"
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
+            onclick="scrollCarousel('carousel-movies', -1)" aria-label="Scroll left">
+            &#8592;
+        </button>
+        <div id="carousel-movies"
+            class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+            {% for item in trending %}
+            <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+                <div class="relative">
+                    <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                        class="w-full h-72 object-cover rounded-t-lg" />
+                </div>
+                <div class="p-2">
+                    <div class="font-bold text-lg leading-tight mt-2 mb-1">
+                        {{ item.title }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-        <div class="p-2">
-          <div class="font-bold text-lg leading-tight mt-2 mb-1">
-            {{ item.title }}
-          </div>
-        </div>
-      </div>
-      {% endfor %}
+        <button id="carousel-movies-right"
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
+            onclick="scrollCarousel('carousel-movies', 1)" aria-label="Scroll right">
+            &#8594;
+        </button>
     </div>
     <h2 class="text-2xl font-semibold mb-2">Popular Series</h2>
-    <div class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth">
-      {% for item in top_series %}
-      <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg">
-        <div class="relative">
-          <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-72 object-cover rounded-t-lg" />
+    <div class="relative group">
+        <button id="carousel-series-left"
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
+            onclick="scrollCarousel('carousel-series', -1)" aria-label="Scroll left">
+            &#8592;
+        </button>
+        <div id="carousel-series"
+            class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+            {% for item in top_series %}
+            <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+                <div class="relative">
+                    <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                        class="w-full h-72 object-cover rounded-t-lg" />
+                </div>
+                <div class="p-2">
+                    <div class="font-bold text-lg leading-tight mt-2 mb-1">
+                        {{ item.title }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-        <div class="p-2">
-          <div class="font-bold text-lg leading-tight mt-2 mb-1">
-            {{ item.title }}
-          </div>
-        </div>
-      </div>
-      {% endfor %}
+        <button id="carousel-series-right"
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
+            onclick="scrollCarousel('carousel-series', 1)" aria-label="Scroll right">
+            &#8594;
+        </button>
     </div>
     <h2 class="text-2xl font-semibold mb-2">Popular Animated Shows</h2>
-    <div class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth">
-      {% for item in top_animated %}
-      <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg">
-        <div class="relative">
-          <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-72 object-cover rounded-t-lg" />
+    <div class="relative group">
+        <button id="carousel-animated-left"
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
+            onclick="scrollCarousel('carousel-animated', -1)" aria-label="Scroll left">
+            &#8592;
+        </button>
+        <div id="carousel-animated"
+            class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+            {% for item in top_animated %}
+            <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+                <div class="relative">
+                    <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                        class="w-full h-72 object-cover rounded-t-lg" />
+                </div>
+                <div class="p-2">
+                    <div class="font-bold text-lg leading-tight mt-2 mb-1">
+                        {{ item.title }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-        <div class="p-2">
-          <div class="font-bold text-lg leading-tight mt-2 mb-1">
-            {{ item.title }}
-          </div>
-        </div>
-      </div>
-      {% endfor %}
+        <button id="carousel-animated-right"
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
+            onclick="scrollCarousel('carousel-animated', 1)" aria-label="Scroll right">
+            &#8594;
+        </button>
     </div>
     <h2 class="text-2xl font-semibold mb-2">Popular Comics</h2>
-    <div class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth">
-      {% for item in top_comics %}
-      <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg">
-        <div class="relative">
-          <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-72 object-cover rounded-t-lg" />
+    <div class="relative group">
+        <button id="carousel-comics-left"
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
+            onclick="scrollCarousel('carousel-comics', -1)" aria-label="Scroll left">
+            &#8592;
+        </button>
+        <div id="carousel-comics"
+            class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+            {% for item in top_comics %}
+            <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+                <div class="relative">
+                    <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                        class="w-full h-72 object-cover rounded-t-lg" />
+                </div>
+                <div class="p-2">
+                    <div class="font-bold text-lg leading-tight mt-2 mb-1">
+                        {{ item.title }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-        <div class="p-2">
-          <div class="font-bold text-lg leading-tight mt-2 mb-1">
-            {{ item.title }}
-          </div>
-        </div>
-      </div>
-      {% endfor %}
+        <button id="carousel-comics-right"
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
+            onclick="scrollCarousel('carousel-comics', 1)" aria-label="Scroll right">
+            &#8594;
+        </button>
     </div>
-  </div>
-  {% endblock %}
+</div>
 
-</body>
+<script>
+    function scrollCarousel(id, direction) {
+        const container = document.getElementById(id);
+        if (!container) return;
+        // Find the first visible card
+        const card = container.querySelector('div.bg-gray-800, div.bg-gray-800.rounded-lg');
+        const gap = 16; // gap-4 in Tailwind = 16px
+        const cardWidth = card ? card.offsetWidth + gap : 250;
+        const cardsPerPage = Math.floor(container.clientWidth / cardWidth) || 1;
+        const scrollAmount = cardWidth * cardsPerPage;
+        container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        setTimeout(() => updateCarouselArrows(id), 300);
+    }
 
-</html>
+    function updateCarouselArrows(id) {
+        const container = document.getElementById(id);
+        if (!container) return;
+        const leftArrow = document.getElementById(id + '-left');
+        const rightArrow = document.getElementById(id + '-right');
+        if (!leftArrow || !rightArrow) return;
+        if (container.scrollLeft <= 5) {
+            leftArrow.classList.add('hidden');
+        } else {
+            leftArrow.classList.remove('hidden');
+        }
+        if (container.scrollWidth - container.clientWidth - container.scrollLeft <= 5) {
+            rightArrow.classList.add('hidden');
+        } else {
+            rightArrow.classList.remove('hidden');
+        }
+    }
+
+    function initCarouselArrows(ids) {
+        ids.forEach(id => {
+            updateCarouselArrows(id);
+            const container = document.getElementById(id);
+            if (container) {
+                container.addEventListener('scroll', () => updateCarouselArrows(id));
+                window.addEventListener('resize', () => updateCarouselArrows(id));
+            }
+        });
+    }
+
+    function enableMouseWheelHorizontalScroll(carouselId) {
+        const container = document.getElementById(carouselId);
+        if (!container) return;
+        container.addEventListener('wheel', function (e) {
+            if (e.deltaY === 0) return;
+            e.preventDefault();
+            container.scrollBy({ left: e.deltaY, behavior: 'smooth' });
+        }, { passive: false });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const carouselIds = [
+            'carousel-movies',
+            'carousel-series',
+            'carousel-animated',
+            'carousel-comics',
+            'carousel-watchlist'
+        ];
+        initCarouselArrows(carouselIds);
+        carouselIds.forEach(enableMouseWheelHorizontalScroll);
+    });
+</script>
+{% endblock %}

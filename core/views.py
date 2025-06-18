@@ -12,10 +12,10 @@ from django.db import models
 # Create your views here.
 def index(request):
     # Public landing page: show popular content for everyone
-    trending = BaseContent.objects.filter(content_type='movie').order_by('-rating')[:8]
-    top_series = BaseContent.objects.filter(content_type='series').order_by('-rating')[:8]
-    top_animated = BaseContent.objects.filter(content_type='animatedshow').order_by('-rating')[:8]
-    top_comics = BaseContent.objects.filter(content_type='comic').order_by('-rating')[:8]
+    trending = BaseContent.objects.filter(content_type='movie').order_by('-rating')[:12]
+    top_series = BaseContent.objects.filter(content_type='series').order_by('-rating')[:12]
+    top_animated = BaseContent.objects.filter(content_type='animatedshow').order_by('-rating')[:12]
+    top_comics = BaseContent.objects.filter(content_type='comic').order_by('-rating')[:12]
     profile = None
     profile_id = request.session.get('profile_id')
     if profile_id:
@@ -101,7 +101,7 @@ def home_view(request):
     if not profile_id:
         return redirect('login')
     profile = Profile.objects.get(id=profile_id)
-    watchlist = Watchlist.objects.filter(profile=profile).select_related('content')[:8]
+    watchlist = Watchlist.objects.filter(profile=profile).select_related('content')[:12]
     # You can add more personalized queries here (e.g., recommendations)
     return render(request, 'core/home.html', {
         'profile': profile,
@@ -237,3 +237,8 @@ def comic_list(request):
         'type': 'Comic',
         'profile': profile,
     })
+
+def content_detail(request, pk):
+    content = get_object_or_404(BaseContent, pk=pk)
+    # Add related entries, recommendations, etc. as needed
+    return render(request, 'core/content_detail.html', {'content': content})

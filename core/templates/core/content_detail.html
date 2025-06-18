@@ -1,0 +1,61 @@
+{% extends "core/base.html" %}
+{% block title %}{{ content.title }}{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row gap-6">
+    <!-- Left: Poster & Edit Status -->
+    <div class="w-full md:w-1/4 flex flex-col items-center">
+        <img src="{{ content.poster_url }}" alt="{{ content.title }}" class="rounded-lg shadow-lg w-full mb-4">
+        <!-- Edit Status (if user is logged in) -->
+        {% if user.is_authenticated %}
+        <div class="bg-gray-800 p-4 rounded-lg w-full">
+            <h3 class="font-semibold mb-2">Edit Status</h3>
+            <form method="post" action="{% url 'update_status' content.pk %}">
+                {% csrf_token %}
+                <label>Status:</label>
+                <select name="status" class="w-full mb-2">
+                    <option value="plan">Plan to Watch</option>
+                    <option value="watching">Watching</option>
+                    <option value="completed">Completed</option>
+                    <option value="on_hold">On Hold</option>
+                    <option value="dropped">Dropped</option>
+                </select>
+                <label>Eps Seen:</label>
+                <input type="number" name="progress" value="0" class="w-full mb-2">
+                <label>Your Score:</label>
+                <select name="score" class="w-full mb-2">
+                    <option value="">Select</option>
+                    {% for i in 1|to:10 %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="w-full bg-blue-600 text-white rounded py-1">Update</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right: Details -->
+    <div class="w-full md:w-3/4">
+        <h1 class="text-3xl font-bold mb-1">{{ content.title }}</h1>
+        <div class="text-gray-400 mb-2">{{ content.alt_title }}</div>
+        <div class="flex flex-wrap gap-4 mb-4">
+            <span class="bg-gray-700 px-2 py-1 rounded">Type: {{ content.content_type|title }}</span>
+            <span class="bg-gray-700 px-2 py-1 rounded">Year: {{ content.year }}</span>
+            <span class="bg-gray-700 px-2 py-1 rounded">Status: {{ content.status }}</span>
+            <span class="bg-gray-700 px-2 py-1 rounded">Episodes: {{ content.episodes }}</span>
+            <span class="bg-gray-700 px-2 py-1 rounded">Score: {{ content.rating }}</span>
+        </div>
+        <div class="mb-4">
+            <h2 class="font-semibold text-lg mb-1">Synopsis</h2>
+            <p class="text-gray-200">{{ content.synopsis }}</p>
+        </div>
+        <!-- Related Entries, Recommendations, etc. -->
+        <div class="mb-4">
+            <h2 class="font-semibold text-lg mb-1">Related Entries</h2>
+            <!-- Loop through related entries if you have them -->
+        </div>
+        <!-- Videos, Reviews, etc. can be added here -->
+    </div>
+</div>
+{% endblock %}

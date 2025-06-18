@@ -7,21 +7,95 @@
 </div>
 <div>
     <h2 class="text-2xl font-semibold mb-2">Your Watchlist</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {% for item in watchlist %}
-        <div class="bg-gray-800 rounded-lg shadow-lg">
-            <div class="relative">
-                <img src="{{ item.content.poster_url }}" alt="{{ item.content.title }}"
-                    class="w-full h-72 object-cover rounded-t-lg" />
-            </div>
-            <div class="p-2">
-                <div class="font-bold text-lg leading-tight mt-2 mb-1">
-                    {{ item.content.title }}
+    <div class="relative group">
+        <button id="carousel-watchlist-left"
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
+            onclick="scrollCarousel('carousel-watchlist', -1)" aria-label="Scroll left">
+            &#8592;
+        </button>
+        <div id="carousel-watchlist"
+            class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+            {% for item in watchlist %}
+            <div class="bg-gray-800 rounded-lg shadow-lg flex-shrink-0 w-48 snap-start">
+                <div class="relative">
+                    <img src="{{ item.content.poster_url }}" alt="{{ item.content.title }}"
+                        class="w-full h-72 object-cover rounded-t-lg" />
+                </div>
+                <div class="p-2">
+                    <div class="font-bold text-lg leading-tight mt-2 mb-1">
+                        {{ item.content.title }}
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+        <button id="carousel-watchlist-right"
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
+            onclick="scrollCarousel('carousel-watchlist', 1)" aria-label="Scroll right">
+            &#8594;
+        </button>
     </div>
     <!-- Add more personalized sections here -->
 </div>
+<script>
+    function scrollCarousel(id, direction) {
+        const container = document.getElementById(id);
+        if (!container) return;
+        // Find the first visible card
+        const card = container.querySelector('div.bg-gray-800, div.bg-gray-800.rounded-lg');
+        const gap = 16; // gap-4 in Tailwind = 16px
+        const cardWidth = card ? card.offsetWidth + gap : 250;
+        const cardsPerPage = Math.floor(container.clientWidth / cardWidth) || 1;
+        const scrollAmount = cardWidth * cardsPerPage;
+        container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        setTimeout(() => updateCarouselArrows(id), 300);
+    }
+
+    function updateCarouselArrows(id) {
+        const container = document.getElementById(id);
+        if (!container) return;
+        const leftArrow = document.getElementById(id + '-left');
+        const rightArrow = document.getElementById(id + '-right');
+        if (!leftArrow || !rightArrow) return;
+        if (container.scrollLeft <= 5) {
+            leftArrow.classList.add('hidden');
+        } else {
+            leftArrow.classList.remove('hidden');
+        }
+        if (container.scrollWidth - container.clientWidth - container.scrollLeft <= 5) {
+            rightArrow.classList.add('hidden');
+        } else {
+            rightArrow.classList.remove('hidden');
+        }
+    }
+
+    function initCarouselArrows(ids) {
+        ids.forEach(id => {
+            updateCarouselArrows(id);
+            const container = document.getElementById(id);
+            if (container) {
+                container.addEventListener('scroll', () => updateCarouselArrows(id));
+                window.addEventListener('resize', () => updateCarouselArrows(id));
+            }
+        });
+    }
+
+    function enableMouseWheelHorizontalScroll(carouselId) {
+        const container = document.getElementById(carouselId);
+        if (!container) return;
+        container.addEventListener('wheel', function (e) {
+            if (e.deltaY === 0) return;
+            e.preventDefault();
+            container.scrollBy({ left: e.deltaY, behavior: 'smooth' });
+        }, { passive: false });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const carouselIds = [
+            'carousel-watchlist'
+        ];
+        initCarouselArrows(carouselIds);
+        carouselIds.forEach(enableMouseWheelHorizontalScroll);
+    });
+</script>
 {% endblock %}

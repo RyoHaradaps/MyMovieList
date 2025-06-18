@@ -21,4 +21,5 @@ urlpatterns = [
     path('series/list/', views.series_list, name='series_list'),
     path('animated/list/', views.animated_list, name='animated_list'),
     path('comics/list/', views.comic_list, name='comic_list'),
+    path('content/<int:pk>/', views.content_detail, name='content_detail'),
 ]
