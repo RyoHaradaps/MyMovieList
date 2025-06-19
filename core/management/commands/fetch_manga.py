@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from core.models import BaseContent
+from core.models import BaseContent, Character, VoiceActor, Staff, Theme
 import requests
 
 class Command(BaseCommand):
@@ -21,11 +21,12 @@ class Command(BaseCommand):
             rating = item.get('score')
             year = item.get('published', {}).get('from', '')
             year = int(year.split('-')[0]) if year else 2000
+            mal_id = item.get('mal_id')
 
-            if not title:
+            if not title or not mal_id:
                 continue
 
-            BaseContent.objects.update_or_create(
+            content, _ = BaseContent.objects.update_or_create(
                 title=title,
                 content_type='comic',
                 defaults={
@@ -36,5 +37,47 @@ class Command(BaseCommand):
                     'release_year': year
                 }
             )
+
+            # Fetch characters & voice actors
+            characters_url = f"https://api.jikan.moe/v4/manga/{mal_id}/characters"
+            char_response = requests.get(characters_url)
+            if char_response.status_code == 200:
+                for char in char_response.json().get('data', []):
+                    character_obj, _ = Character.objects.update_or_create(
+                        name=char['character']['name'],
+                        content=content,
+                        defaults={'image_url': char['character']['images']['jpg']['image_url'], 'role': char['role']}
+                    )
+                    for va in char.get('voice_actors', []):
+                        va_obj, _ = VoiceActor.objects.update_or_create(
+                            name=va['person']['name'],
+                            defaults={'language': va['language'], 'image_url': va['person']['images']['jpg']['image_url']}
+                        )
+                        character_obj.voice_actors.add(va_obj)
+
+            # Fetch staff
+            staff_url = f"https://api.jikan.moe/v4/manga/{mal_id}/staff"
+            staff_response = requests.get(staff_url)
+            if staff_response.status_code == 200:
+                for staff in staff_response.json().get('data', []):
+                    Staff.objects.update_or_create(
+                        name=staff['person']['name'],
+                        role=staff['positions'][0] if staff['positions'] else '',
+                        content=content,
+                        defaults={'image_url': staff['person']['images']['jpg']['image_url']}
+                    )
+
+            # Fetch themes (not always available for manga, but included for completeness)
+            themes_url = f"https://api.jikan.moe/v4/manga/{mal_id}/themes"
+            themes_response = requests.get(themes_url)
+            if themes_response.status_code == 200:
+                for op in themes_response.json().get('data', {}).get('openings', []):
+                    Theme.objects.update_or_create(
+                        content=content, type='opening', title=op, defaults={'artist': ''}
+                    )
+                for ed in themes_response.json().get('data', {}).get('endings', []):
+                    Theme.objects.update_or_create(
+                        content=content, type='ending', title=ed, defaults={'artist': ''}
+                    )
 
         self.stdout.write(self.style.SUCCESS("✅ Manga imported successfully from Jikan API."))

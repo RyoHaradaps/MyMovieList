@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from core.models import BaseContent
+from core.models import BaseContent, Character, Staff
 import requests
 from django.conf import settings
 
@@ -26,13 +26,14 @@ class Command(BaseCommand):
             poster = item.get('poster_path')
             rating = item.get('vote_average')
             release_date = item.get('release_date', '')
+            tmdb_id = item.get('id')
 
-            if not title or not release_date:
+            if not title or not release_date or not tmdb_id:
                 continue
 
             year = int(release_date.split('-')[0])
 
-            BaseContent.objects.update_or_create(
+            content, _ = BaseContent.objects.update_or_create(
                 title=title,
                 content_type='movie',
                 defaults={
@@ -43,5 +44,24 @@ class Command(BaseCommand):
                     'release_year': year
                 }
             )
+
+            # Fetch cast and crew
+            credits_url = f"https://api.themoviedb.org/3/movie/{tmdb_id}/credits?api_key={API_KEY}"
+            credits_response = requests.get(credits_url)
+            if credits_response.status_code == 200:
+                credits = credits_response.json()
+                for cast in credits.get('cast', [])[:10]:
+                    Character.objects.update_or_create(
+                        name=cast['name'],
+                        content=content,
+                        defaults={'image_url': f"https://image.tmdb.org/t/p/w500{cast['profile_path']}" if cast.get('profile_path') else '', 'role': 'main'}
+                    )
+                for crew in credits.get('crew', []):
+                    Staff.objects.update_or_create(
+                        name=crew['name'],
+                        role=crew['job'],
+                        content=content,
+                        defaults={'image_url': f"https://image.tmdb.org/t/p/w500{crew['profile_path']}" if crew.get('profile_path') else ''}
+                    )
 
         self.stdout.write(self.style.SUCCESS("✅ Movies imported successfully."))

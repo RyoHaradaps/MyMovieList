@@ -32,10 +32,13 @@
                 <tr class="border-b border-gray-700">
                     <td class="px-4 py-2">{{ forloop.counter }}</td>
                     <td class="px-4 py-2">
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-12 h-16 object-cover rounded">
+                        <a href="{% url 'content_detail' item.pk %}">
+                            <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                                class="w-12 h-16 object-cover rounded">
+                        </a>
                     </td>
                     <td class="px-4 py-2 font-semibold">
-                        <a href="#" class="hover:underline">{{ item.title }}</a>
+                        <a href="{% url 'content_detail' item.pk %}" class="hover:underline">{{ item.title }}</a>
                     </td>
                     <td class="px-4 py-2 text-center">-</td>
                     <td class="px-4 py-2">{{ item.get_content_type_display }}</td>

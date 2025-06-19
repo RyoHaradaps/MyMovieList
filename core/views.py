@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import BaseContent, Profile, Watchlist
+from .models import BaseContent, Profile, Watchlist, ContentRelation
 from datetime import datetime
 from django.contrib.auth.hashers import make_password, check_password
 from django.db import models
@@ -240,5 +240,17 @@ def comic_list(request):
 
 def content_detail(request, pk):
     content = get_object_or_404(BaseContent, pk=pk)
-    # Add related entries, recommendations, etc. as needed
-    return render(request, 'core/content_detail.html', {'content': content})
+    related_entries = ContentRelation.objects.filter(from_content=content).select_related('to_content')
+
+    # Fetch related data
+    characters = content.characters.all().prefetch_related('voice_actors')
+    staff = content.staff.all()
+    themes = content.themes.all()
+
+    return render(request, 'core/content_detail.html', {
+        'content': content,
+        'related_entries': related_entries,
+        'characters': characters,
+        'staff': staff,
+        'themes': themes,
+    })

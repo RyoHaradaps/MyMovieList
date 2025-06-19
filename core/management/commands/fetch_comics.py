@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from core.models import BaseContent
+from core.models import BaseContent, Character, Staff
 import requests
 from django.conf import settings
 
@@ -32,7 +32,7 @@ class Command(BaseCommand):
             if not title:
                 continue
 
-            BaseContent.objects.update_or_create(
+            content, _ = BaseContent.objects.update_or_create(
                 title=title,
                 content_type='comic',
                 defaults={
@@ -43,5 +43,22 @@ class Command(BaseCommand):
                     'release_year': year
                 }
             )
+
+            # Characters
+            for char in item.get('character_credits', []):
+                Character.objects.update_or_create(
+                    name=char['name'],
+                    content=content,
+                    defaults={'image_url': char.get('image', {}).get('icon_url', ''), 'role': 'main'}
+                )
+
+            # Staff (writers, artists)
+            for person in item.get('person_credits', []):
+                Staff.objects.update_or_create(
+                    name=person['name'],
+                    role=person.get('role', ''),
+                    content=content,
+                    defaults={'image_url': person.get('image', {}).get('icon_url', '')}
+                )
 
         self.stdout.write(self.style.SUCCESS("✅ Comics imported successfully from Comic Vine API."))

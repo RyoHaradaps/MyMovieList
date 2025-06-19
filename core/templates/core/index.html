@@ -18,17 +18,19 @@
         <div id="carousel-movies"
             class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
             {% for item in trending %}
-            <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
-                <div class="relative">
-                    <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                        class="w-full h-72 object-cover rounded-t-lg" />
-                </div>
-                <div class="p-2">
-                    <div class="font-bold text-lg leading-tight mt-2 mb-1">
-                        {{ item.title }}
+            <a href="{% url 'content_detail' item.pk %}" class="block hover:scale-105 transition-transform">
+                <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+                    <div class="relative">
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                            class="w-full h-72 object-cover rounded-t-lg" />
+                    </div>
+                    <div class="p-2">
+                        <div class="font-bold text-lg leading-tight mt-2 mb-1">
+                            {{ item.title }}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
         <button id="carousel-movies-right"
@@ -47,17 +49,19 @@
         <div id="carousel-series"
             class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
             {% for item in top_series %}
-            <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
-                <div class="relative">
-                    <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                        class="w-full h-72 object-cover rounded-t-lg" />
-                </div>
-                <div class="p-2">
-                    <div class="font-bold text-lg leading-tight mt-2 mb-1">
-                        {{ item.title }}
+            <a href="{% url 'content_detail' item.pk %}" class="block hover:scale-105 transition-transform">
+                <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+                    <div class="relative">
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                            class="w-full h-72 object-cover rounded-t-lg" />
+                    </div>
+                    <div class="p-2">
+                        <div class="font-bold text-lg leading-tight mt-2 mb-1">
+                            {{ item.title }}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
         <button id="carousel-series-right"
@@ -76,17 +80,19 @@
         <div id="carousel-animated"
             class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
             {% for item in top_animated %}
-            <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
-                <div class="relative">
-                    <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                        class="w-full h-72 object-cover rounded-t-lg" />
-                </div>
-                <div class="p-2">
-                    <div class="font-bold text-lg leading-tight mt-2 mb-1">
-                        {{ item.title }}
+            <a href="{% url 'content_detail' item.pk %}" class="block hover:scale-105 transition-transform">
+                <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+                    <div class="relative">
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                            class="w-full h-72 object-cover rounded-t-lg" />
+                    </div>
+                    <div class="p-2">
+                        <div class="font-bold text-lg leading-tight mt-2 mb-1">
+                            {{ item.title }}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
         <button id="carousel-animated-right"
@@ -105,17 +111,19 @@
         <div id="carousel-comics"
             class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
             {% for item in top_comics %}
-            <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
-                <div class="relative">
-                    <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                        class="w-full h-72 object-cover rounded-t-lg" />
-                </div>
-                <div class="p-2">
-                    <div class="font-bold text-lg leading-tight mt-2 mb-1">
-                        {{ item.title }}
+            <a href="{% url 'content_detail' item.pk %}" class="block hover:scale-105 transition-transform">
+                <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+                    <div class="relative">
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                            class="w-full h-72 object-cover rounded-t-lg" />
+                    </div>
+                    <div class="p-2">
+                        <div class="font-bold text-lg leading-tight mt-2 mb-1">
+                            {{ item.title }}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
         <button id="carousel-comics-right"
