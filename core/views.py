@@ -12,6 +12,7 @@ from django.utils import timezone
 from collections import Counter
 import requests
 from django.conf import settings
+from .services import get_latest_animated_movies, get_upcoming_animated_movies
 
 # Create your views here.
 def index(request):
@@ -652,7 +653,7 @@ def anime_showcase(request):
 
 def animated_showcase(request):
     TMDB_API_KEY = getattr(settings, 'TMDB_API_KEY', None)
-    trending, popular, latest = [], [], []
+    trending, popular, latest, coming_soon = [], [], [], []
     if TMDB_API_KEY:
         try:
             # Trending: Most popular animated TV (Western only)
@@ -683,27 +684,37 @@ def animated_showcase(request):
                 for s in popular_resp.json().get('results', []) if 'JP' not in s.get('origin_country', [])
             ][:12]
 
-            # Latest: Most recently released animated TV (Western only)
-            latest_url = f'https://api.themoviedb.org/3/discover/tv?api_key={TMDB_API_KEY}&with_genres=16&sort_by=first_air_date.desc'
-            latest_resp = requests.get(latest_url)
+            # Latest: "Now Playing" and recent animated movies from TMDB
+            latest_raw = get_latest_animated_movies()
             latest = [
                 {
-                    'title': s.get('name'),
-                    'poster_url': f"https://image.tmdb.org/t/p/w500{s.get('poster_path')}" if s.get('poster_path') else '',
-                    'release_year': s.get('first_air_date', '')[:4],
-                    'rating': s.get('vote_average'),
-                    'pk': s.get('id'),
-                }
-                for s in latest_resp.json().get('results', []) if 'JP' not in s.get('origin_country', [])
-            ][:12]
+                    'title': m.get('title'),
+                    'poster_url': f"https://image.tmdb.org/t/p/w500{m.get('poster_path')}" if m.get('poster_path') else '',
+                    'release_year': m.get('release_date', '')[:4],
+                    'rating': m.get('vote_average'),
+                    'pk': m.get('id'),
+                } for m in latest_raw
+            ]
+
+            # Coming Soon: Upcoming animated movies from TMDB
+            coming_soon_raw = get_upcoming_animated_movies()
+            coming_soon = [
+                {
+                    'title': m.get('title'),
+                    'poster_url': f"https://image.tmdb.org/t/p/w500{m.get('poster_path')}" if m.get('poster_path') else '',
+                    'release_year': m.get('release_date', '')[:4],
+                    'rating': m.get('vote_average'),
+                    'pk': m.get('id'),
+                } for m in coming_soon_raw
+            ]
         except Exception:
-            trending, popular, latest = [], [], []
+            trending, popular, latest, coming_soon = [], [], [], []
     return render(request, 'core/content_showcase.html', {
         'type': 'animated',
         'trending': trending,
         'popular': popular,
         'latest': latest,
-        'coming_soon': [],
+        'coming_soon': coming_soon,
     })
 
 def unique_issues_by_title(issues, max_items=12):
