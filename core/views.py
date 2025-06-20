@@ -15,24 +15,28 @@ from django.conf import settings
 
 # Create your views here.
 def index(request):
+    # If user is logged in, redirect to home page
+    if 'profile_id' in request.session:
+        try:
+            # Verify the profile exists to avoid session errors
+            Profile.objects.get(id=request.session['profile_id'])
+            return redirect('home')
+        except Profile.DoesNotExist:
+            # If profile in session is invalid, clear it and show index
+            del request.session['profile_id']
+
     # Public landing page: show popular content for everyone
     trending = BaseContent.objects.filter(content_type='movie').order_by('-rating')[:12]
     top_series = BaseContent.objects.filter(content_type='series').order_by('-rating')[:12]
     top_animated = BaseContent.objects.filter(content_type='animatedshow').order_by('-rating')[:12]
     top_comics = BaseContent.objects.filter(content_type='comic').order_by('-rating')[:12]
-    profile = None
-    profile_id = request.session.get('profile_id')
-    if profile_id:
-        try:
-            profile = Profile.objects.get(id=profile_id)
-        except Profile.DoesNotExist:
-            profile = None
+    
     return render(request, 'core/index.html', {
         'trending': trending,
         'top_series': top_series,
         'top_animated': top_animated,
         'top_comics': top_comics,
-        'profile': profile,
+        'profile': None,
     })
 
 def register_view(request):
@@ -103,67 +107,92 @@ def logout_view(request):
 def home_view(request):
     profile_id = request.session.get('profile_id')
     if not profile_id:
-        return redirect('login')
+        return redirect('index')
+
+    try:
+        profile = Profile.objects.get(id=profile_id)
+    except Profile.DoesNotExist:
+        # If profile_id in session is invalid, clear it and redirect to index
+        if 'profile_id' in request.session:
+            del request.session['profile_id']
+        return redirect('index')
+
+    continue_watching = []
+    recent_watchlist = []
     
-    profile = get_object_or_404(Profile, id=profile_id)
     watchlist_items = Watchlist.objects.filter(profile=profile).select_related('content')
-    
     # "Continue Watching" carousel
     continue_watching = [item.content for item in watchlist_items.filter(status='watching').order_by('-added_on')[:12]]
-    
     # "Recently Added to Watchlist" carousel
     recent_watchlist = [item.content for item in watchlist_items.order_by('-added_on')[:12]]
 
-    # Personalized recommendations based on genres
-    recommended_carousels = []
-    
-    # Get all genres from user's watchlist
-    user_genres = Genre.objects.filter(basecontent__in=watchlist_items.values('content')).values_list('name', flat=True)
-    
-    if user_genres:
-        # Find the 3 most common genres
-        genre_counts = Counter(user_genres)
-        top_genres = [genre for genre, count in genre_counts.most_common(3)]
-        
-        # Get IDs of content already in the user's watchlist to exclude them
-        watchlist_content_ids = watchlist_items.values_list('content_id', flat=True)
+    # Popular Carousels for all content types
+    popular_carousels = []
+    TMDB_API_KEY = getattr(settings, 'TMDB_API_KEY', None)
+    COMICVINE_API_KEY = getattr(settings, 'COMICVINE_API_KEY', None)
 
-        for genre_name in top_genres:
-            genre_obj = Genre.objects.get(name=genre_name)
-            recommendations = BaseContent.objects.filter(genres=genre_obj) \
-                                                 .exclude(id__in=watchlist_content_ids) \
-                                                 .order_by('-rating')[:12]
-            if recommendations.exists():
-                recommended_carousels.append({
-                    'title': f"Popular in {genre_name}",
-                    'content': recommendations
-                })
-    
-    # Fallback for new users or users with no genres in their watchlist
-    if not recommended_carousels:
-        # Show generic popular carousels as a fallback
-        recommended_carousels.append({
-            'title': 'Popular Movies',
-            'content': BaseContent.objects.filter(content_type='movie').order_by('-rating')[:12]
+    try:
+        # Popular Movies
+        if TMDB_API_KEY:
+            movies_url = f'https://api.themoviedb.org/3/movie/popular?api_key={TMDB_API_KEY}'
+            movies_resp = requests.get(movies_url).json().get('results', [])
+            popular_carousels.append({
+                'title': 'Popular Movies',
+                'content': [{'pk': m.get('id'), 'title': m.get('title'), 'poster_url': f"https://image.tmdb.org/t/p/w500{m.get('poster_path')}", 'release_year': m.get('release_date', '')[:4], 'rating': m.get('vote_average')} for m in movies_resp[:12]]
+            })
+
+        # Popular Series (excluding talk shows)
+        if TMDB_API_KEY:
+            series_url = f'https://api.themoviedb.org/3/discover/tv?api_key={TMDB_API_KEY}&sort_by=popularity.desc&without_genres=10767,10763'
+            series_resp = requests.get(series_url).json().get('results', [])
+            popular_carousels.append({
+                'title': 'Popular Series',
+                'content': [{'pk': s.get('id'), 'title': s.get('name'), 'poster_url': f"https://image.tmdb.org/t/p/w500{s.get('poster_path')}", 'release_year': s.get('first_air_date', '')[:4], 'rating': s.get('vote_average')} for s in series_resp[:12]]
+            })
+
+        # Popular Anime
+        anime_url = 'https://api.jikan.moe/v4/top/anime?filter=bypopularity'
+        anime_resp = requests.get(anime_url).json().get('data', [])
+        popular_carousels.append({
+            'title': 'Popular Anime',
+            'content': [{'pk': a.get('mal_id'), 'title': a.get('title'), 'poster_url': a.get('images', {}).get('jpg', {}).get('large_image_url'), 'release_year': a.get('year'), 'rating': a.get('score')} for a in anime_resp[:12]]
         })
-        recommended_carousels.append({
-            'title': 'Popular Series',
-            'content': BaseContent.objects.filter(content_type='series').order_by('-rating')[:12]
+
+        # Popular Animated Shows
+        if TMDB_API_KEY:
+            animated_url = f'https://api.themoviedb.org/3/discover/tv?api_key={TMDB_API_KEY}&with_genres=16&sort_by=popularity.desc'
+            animated_resp = requests.get(animated_url).json().get('results', [])
+            popular_carousels.append({
+                'title': 'Popular Animated Shows',
+                'content': [{'pk': s.get('id'), 'title': s.get('name'), 'poster_url': f"https://image.tmdb.org/t/p/w500{s.get('poster_path')}", 'release_year': s.get('first_air_date', '')[:4], 'rating': s.get('vote_average')} for s in animated_resp if 'JP' not in s.get('origin_country', [])][:12]
+            })
+
+        # Popular Manga
+        manga_url = 'https://api.jikan.moe/v4/top/manga?filter=bypopularity'
+        manga_resp = requests.get(manga_url).json().get('data', [])
+        popular_carousels.append({
+            'title': 'Popular Manga',
+            'content': [{'pk': m.get('mal_id'), 'title': m.get('title'), 'poster_url': m.get('images', {}).get('jpg', {}).get('large_image_url'), 'release_year': m.get('published', {}).get('from', '')[:4], 'rating': m.get('score')} for m in manga_resp[:12]]
         })
-        recommended_carousels.append({
-            'title': 'Popular Animated Shows',
-            'content': BaseContent.objects.filter(content_type='animatedshow').order_by('-rating')[:12]
-        })
-        recommended_carousels.append({
-            'title': 'Popular Comics',
-            'content': BaseContent.objects.filter(content_type='comic').order_by('-rating')[:12]
-        })
+
+        # Popular Comics
+        if COMICVINE_API_KEY:
+            comics_url = f'https://comicvine.gamespot.com/api/issues/?api_key={COMICVINE_API_KEY}&format=json&sort=popularity:desc'
+            comics_resp = requests.get(comics_url, headers={'User-Agent': 'MyMovieList/1.0'}).json().get('results', [])
+            popular_carousels.append({
+                'title': 'Popular Comics',
+                'content': [{'pk': c.get('id'), 'title': c.get('name') or c.get('volume', {}).get('name', ''), 'poster_url': c.get('image', {}).get('original_url', ''), 'release_year': c.get('cover_date', '')[:4], 'rating': None} for c in comics_resp[:12]]
+            })
+
+    except Exception:
+        # In case of API errors, the carousels list will be empty and nothing will be shown.
+        pass
 
     context = {
         'profile': profile,
         'continue_watching': continue_watching,
         'recent_watchlist': recent_watchlist,
-        'recommended_carousels': recommended_carousels,
+        'recommended_carousels': popular_carousels,
     }
     return render(request, 'core/home.html', context)
 
@@ -350,8 +379,8 @@ def movies_showcase(request):
     trending, popular, latest, coming_soon = [], [], [], []
     if TMDB_API_KEY:
         try:
-            # Trending
-            trending_url = f'https://api.themoviedb.org/3/trending/movie/week?api_key={TMDB_API_KEY}'
+            # Trending (Now Playing in theaters)
+            trending_url = f'https://api.themoviedb.org/3/movie/now_playing?api_key={TMDB_API_KEY}'
             trending_resp = requests.get(trending_url)
             trending = [
                 {
@@ -449,8 +478,16 @@ def series_showcase(request):
                     'pk': s.get('id'),
                 } for s in latest_resp.json().get('results', [])[:12]
             ]
-            # Coming Soon TV (on the air)
-            coming_soon_url = f'https://api.themoviedb.org/3/tv/on_the_air?api_key={TMDB_API_KEY}'
+            # Coming Soon TV (upcoming, not yet aired)
+            from datetime import datetime, timedelta
+            today = datetime.now().strftime('%Y-%m-%d')
+            future_date = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d')
+            coming_soon_url = (
+                f'https://api.themoviedb.org/3/discover/tv?api_key={TMDB_API_KEY}'
+                f'&language=en-US&sort_by=popularity.desc'
+                f'&first_air_date.gte={today}&first_air_date.lte={future_date}'
+                f'&with_type=2|3|4|5'  # Excludes talk shows, news, etc.
+            )
             coming_soon_resp = requests.get(coming_soon_url)
             coming_soon = [
                 {
@@ -474,7 +511,7 @@ def series_showcase(request):
 def anime_showcase(request):
     trending, popular, latest, coming_soon = [], [], [], []
     try:
-        # Trending: currently airing TV anime
+        # Trending: currently airing TV anime (current season)
         trending_url = 'https://api.jikan.moe/v4/seasons/now'
         trending_resp = requests.get(trending_url)
         trending = [
@@ -502,22 +539,12 @@ def anime_showcase(request):
             for a in popular_resp.json().get('data', []) if a.get('type') == 'TV'
         ][:12]
 
-        # Latest: currently airing TV anime (current season)
-        from datetime import datetime
-        def get_current_season():
-            month = datetime.now().month
-            if month in [12, 1, 2]:
-                return 'winter'
-            elif month in [3, 4, 5]:
-                return 'spring'
-            elif month in [6, 7, 8]:
-                return 'summer'
-            else:
-                return 'fall'
-        year = datetime.now().year
-        season = get_current_season()
-        latest_url = f'https://api.jikan.moe/v4/seasons/{year}/{season}'
-        latest_resp = requests.get(latest_url)
+        # Latest: currently airing TV anime (real-time, fallback to current season if needed)
+        latest = []
+        # 1. Try currently airing
+        airing_url = 'https://api.jikan.moe/v4/anime?status=airing&order_by=start_date&sort=desc&limit=20'
+        airing_resp = requests.get(airing_url)
+        airing_data = airing_resp.json().get('data', [])
         latest = [
             {
                 'title': a['title'],
@@ -526,13 +553,53 @@ def anime_showcase(request):
                 'rating': a.get('score'),
                 'pk': a.get('mal_id'),
             }
-            for a in latest_resp.json().get('data', []) if a.get('type') == 'TV'
-        ][:12]
+            for a in airing_data if a.get('type') == 'TV'
+        ]
+        # 2. Fallback: supplement with current season if not enough
+        if len(latest) < 12:
+            from datetime import datetime
+            def get_current_season():
+                month = datetime.now().month
+                if month in [12, 1, 2]:
+                    return 'winter'
+                elif month in [3, 4, 5]:
+                    return 'spring'
+                elif month in [6, 7, 8]:
+                    return 'summer'
+                else:
+                    return 'fall'
+            year = datetime.now().year
+            season = get_current_season()
+            season_url = f'https://api.jikan.moe/v4/seasons/{year}/{season}'
+            season_resp = requests.get(season_url)
+            season_data = season_resp.json().get('data', [])
+            # Filter out duplicates
+            existing_ids = {a['pk'] for a in latest}
+            for a in season_data:
+                if a.get('type') == 'TV' and a.get('mal_id') not in existing_ids:
+                    latest.append({
+                        'title': a['title'],
+                        'poster_url': a['images']['jpg']['large_image_url'] if a.get('images', {}).get('jpg', {}).get('large_image_url') else '',
+                        'release_year': a.get('year') or (a.get('aired', {}).get('from', '')[:4] if a.get('aired', {}).get('from') else ''),
+                        'rating': a.get('score'),
+                        'pk': a.get('mal_id'),
+                    })
+                if len(latest) >= 12:
+                    break
+        # Deduplicate latest by mal_id (pk)
+        unique_latest = []
+        seen_ids = set()
+        for anime in latest:
+            if anime['pk'] not in seen_ids:
+                unique_latest.append(anime)
+                seen_ids.add(anime['pk'])
+        latest = unique_latest[:12]
 
-        # Coming Soon: upcoming TV anime
+        # Coming Soon: upcoming TV anime, EXCLUDING those already in 'latest', then deduplicate
+        latest_ids = {a['pk'] for a in latest}
         coming_soon_url = 'https://api.jikan.moe/v4/seasons/upcoming'
         coming_soon_resp = requests.get(coming_soon_url)
-        coming_soon = [
+        raw_coming_soon = [
             {
                 'title': a['title'],
                 'poster_url': a['images']['jpg']['large_image_url'] if a.get('images', {}).get('jpg', {}).get('large_image_url') else '',
@@ -540,8 +607,37 @@ def anime_showcase(request):
                 'rating': a.get('score'),
                 'pk': a.get('mal_id'),
             }
-            for a in coming_soon_resp.json().get('data', []) if a.get('type') == 'TV'
-        ][:12]
+            for a in coming_soon_resp.json().get('data', [])
+            if a.get('type') == 'TV' and a.get('mal_id') not in latest_ids
+        ]
+        # Deduplicate by mal_id
+        unique_coming_soon = []
+        seen_ids = set()
+        for anime in raw_coming_soon:
+            if anime['pk'] not in seen_ids:
+                unique_coming_soon.append(anime)
+                seen_ids.add(anime['pk'])
+        coming_soon = unique_coming_soon[:12]
+        # Fallback: if empty, show up to 12 unique upcoming TV anime (even if some overlap with latest)
+        if not coming_soon:
+            raw_coming_soon = [
+                {
+                    'title': a['title'],
+                    'poster_url': a['images']['jpg']['large_image_url'] if a.get('images', {}).get('jpg', {}).get('large_image_url') else '',
+                    'release_year': a.get('year') or (a.get('aired', {}).get('from', '')[:4] if a.get('aired', {}).get('from') else ''),
+                    'rating': a.get('score'),
+                    'pk': a.get('mal_id'),
+                }
+                for a in coming_soon_resp.json().get('data', [])
+                if a.get('type') == 'TV'
+            ]
+            unique_coming_soon = []
+            seen_ids = set()
+            for anime in raw_coming_soon:
+                if anime['pk'] not in seen_ids:
+                    unique_coming_soon.append(anime)
+                    seen_ids.add(anime['pk'])
+            coming_soon = unique_coming_soon[:12]
 
     except Exception:
         trending, popular, latest, coming_soon = [], [], [], []
