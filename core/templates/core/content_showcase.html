@@ -1,66 +1,22 @@
 {% extends "core/base.html" %}
-{% block title %}Your Dashboard - MyMovieList{% endblock %}
-
 {% block content %}
-<div class="text-center mb-8">
-    <h1 class="text-4xl font-bold mb-2">Welcome to MyMovieList</h1>
-    <p class="text-lg text-gray-400 mb-4">Track your movies, series, anime, and comics — all in one place!</p>
-</div>
+<h1 class="text-2xl font-bold mb-4 capitalize">{{ type }} Showcase</h1>
 
-{% if continue_watching %}
-<h2 class="text-2xl font-semibold mt-6 mb-2">Continue Watching</h2>
+<h2 class="text-xl font-semibold mt-6 mb-2">Trending</h2>
 <div class="relative group mb-8">
-    <button id="carousel-continue-watching-left"
+    <button id="carousel-trending-left"
         class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
-        aria-label="Scroll left">&#8592;</button>
-    <div id="carousel-continue-watching"
+        onclick="scrollCarousel('carousel-trending', -1)" aria-label="Scroll left">&#8592;</button>
+    <div id="carousel-trending"
         class="flex overflow-x-auto gap-4 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
-        {% for item in continue_watching %}
+        {% for item in trending %}
         <div
             class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
             <a href="{% url 'content_detail' item.pk %}">
                 <div class="relative">
+                    {% if item.poster_url %}
                     <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
-                    <div
-                        class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        {{ item.release_year }}
-                    </div>
-                    {% if item.rating %}
-                    <div
-                        class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                        <i class="fa-solid fa-star text-yellow-400"></i>
-                        <span>{{ item.rating|floatformat:1 }}</span>
-                    </div>
                     {% endif %}
-                </div>
-                <div class="p-3">
-                    <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}</div>
-                </div>
-            </a>
-        </div>
-        {% endfor %}
-    </div>
-    <button id="carousel-continue-watching-right"
-        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
-        aria-label="Scroll right">&#8594;</button>
-</div>
-{% endif %}
-
-{% for carousel in recommended_carousels %}
-<h2 class="text-2xl font-semibold mt-6 mb-2">{{ carousel.title }}</h2>
-<div class="relative group mb-8">
-    {% with carousel_id="carousel-"|add:forloop.counter|stringformat:"s" %}
-    <button id="{{ carousel_id }}-left"
-        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
-        aria-label="Scroll left">&#8592;</button>
-    <div id="{{ carousel_id }}"
-        class="flex overflow-x-auto gap-4 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
-        {% for item in carousel.content %}
-        <div
-            class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
-            <a href="{% url 'content_detail' item.pk %}">
-                <div class="relative">
-                    <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
                     <div
                         class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
                         {{ item.release_year }}
@@ -79,30 +35,29 @@
             </a>
         </div>
         {% empty %}
-        <div class="text-gray-400">No items to display.</div>
+        <div class="text-gray-400">No trending items.</div>
         {% endfor %}
     </div>
-    <button id="{{ carousel_id }}-right"
+    <button id="carousel-trending-right"
         class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
-        aria-label="Scroll right">&#8594;</button>
-    {% endwith %}
+        onclick="scrollCarousel('carousel-trending', 1)" aria-label="Scroll right">&#8594;</button>
 </div>
-{% endfor %}
 
-{% if recent_watchlist %}
-<h2 class="text-2xl font-semibold mt-6 mb-2">Recently Added to Watchlist</h2>
+<h2 class="text-xl font-semibold mt-6 mb-2">What's Popular</h2>
 <div class="relative group mb-8">
-    <button id="carousel-recent-watchlist-left"
+    <button id="carousel-popular-left"
         class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
-        aria-label="Scroll left">&#8592;</button>
-    <div id="carousel-recent-watchlist"
+        onclick="scrollCarousel('carousel-popular', -1)" aria-label="Scroll left">&#8592;</button>
+    <div id="carousel-popular"
         class="flex overflow-x-auto gap-4 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
-        {% for item in recent_watchlist %}
+        {% for item in popular %}
         <div
             class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
             <a href="{% url 'content_detail' item.pk %}">
                 <div class="relative">
+                    {% if item.poster_url %}
                     <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                    {% endif %}
                     <div
                         class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
                         {{ item.release_year }}
@@ -120,50 +75,109 @@
                 </div>
             </a>
         </div>
+        {% empty %}
+        <div class="text-gray-400">No popular items.</div>
         {% endfor %}
     </div>
-    <button id="carousel-recent-watchlist-right"
+    <button id="carousel-popular-right"
         class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
-        aria-label="Scroll right">&#8594;</button>
+        onclick="scrollCarousel('carousel-popular', 1)" aria-label="Scroll right">&#8594;</button>
+</div>
+
+<h2 class="text-xl font-semibold mt-6 mb-2">Latest</h2>
+<div class="relative group mb-8">
+    <button id="carousel-latest-left"
+        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
+        onclick="scrollCarousel('carousel-latest', -1)" aria-label="Scroll left">&#8592;</button>
+    <div id="carousel-latest"
+        class="flex overflow-x-auto gap-4 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+        {% for item in latest %}
+        <div
+            class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
+            <a href="{% url 'content_detail' item.pk %}">
+                <div class="relative">
+                    {% if item.poster_url %}
+                    <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                    {% endif %}
+                    <div
+                        class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {{ item.release_year }}
+                    </div>
+                    {% if item.rating %}
+                    <div
+                        class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                        <i class="fa-solid fa-star text-yellow-400"></i>
+                        <span>{{ item.rating|floatformat:1 }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="p-3">
+                    <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}</div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="text-gray-400">No latest items.</div>
+        {% endfor %}
+    </div>
+    <button id="carousel-latest-right"
+        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
+        onclick="scrollCarousel('carousel-latest', 1)" aria-label="Scroll right">&#8594;</button>
+</div>
+
+{% if type != 'manga' and type != 'comic' %}
+<h2 class="text-xl font-semibold mt-6 mb-2">Coming Soon</h2>
+<div class="relative group mb-8">
+    <button id="carousel-coming-soon-left"
+        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
+        onclick="scrollCarousel('carousel-coming-soon', -1)" aria-label="Scroll left">&#8592;</button>
+    <div id="carousel-coming-soon"
+        class="flex overflow-x-auto gap-4 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+        {% for item in coming_soon %}
+        <div
+            class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
+            <a href="{% url 'content_detail' item.pk %}">
+                <div class="relative">
+                    {% if item.poster_url %}
+                    <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                    {% endif %}
+                    <div
+                        class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {{ item.release_year }}
+                    </div>
+                    {% if item.rating %}
+                    <div
+                        class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                        <i class="fa-solid fa-star text-yellow-400"></i>
+                        <span>{{ item.rating|floatformat:1 }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="p-3">
+                    <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}</div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="text-gray-400">No coming soon items.</div>
+        {% endfor %}
+    </div>
+    <button id="carousel-coming-soon-right"
+        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
+        onclick="scrollCarousel('carousel-coming-soon', 1)" aria-label="Scroll right">&#8594;</button>
 </div>
 {% endif %}
 
-
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const carousels = document.querySelectorAll('.flex.overflow-x-auto');
-
-        carousels.forEach(carousel => {
-            const carouselId = carousel.id;
-            if (!carouselId) return;
-
-            const leftBtn = document.getElementById(`${carouselId}-left`);
-            const rightBtn = document.getElementById(`${carouselId}-right`);
-
-            if (leftBtn) {
-                leftBtn.addEventListener('click', () => scrollCarousel(carouselId, -1));
-            }
-            if (rightBtn) {
-                rightBtn.addEventListener('click', () => scrollCarousel(carouselId, 1));
-            }
-
-            carousel.addEventListener('scroll', () => updateCarouselArrows(carouselId));
-            window.addEventListener('resize', () => updateCarouselArrows(carouselId));
-            updateCarouselArrows(carouselId);
-        });
-    });
-
     function scrollCarousel(id, direction) {
         const container = document.getElementById(id);
         if (!container) return;
-        const card = container.querySelector('.snap-start');
-        if (!card) return;
-
+        const card = container.querySelector('a > div');
         const gap = 16; // Corresponds to gap-4
-        const scrollAmount = (card.offsetWidth + gap) * Math.floor(container.offsetWidth / (card.offsetWidth + gap));
-
+        const cardWidth = card ? card.offsetWidth + gap : 250;
+        const scrollAmount = cardWidth;
         container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
-        setTimeout(() => updateCarouselArrows(id), 350); // Give it time to scroll
+        setTimeout(() => updateCarouselArrows(id), 300);
     }
 
     function updateCarouselArrows(id) {
@@ -171,14 +185,40 @@
         if (!container) return;
         const leftArrow = document.getElementById(id + '-left');
         const rightArrow = document.getElementById(id + '-right');
-
         if (!leftArrow || !rightArrow) return;
 
-        const isAtStart = container.scrollLeft < 10;
-        const isAtEnd = container.scrollWidth - container.clientWidth - container.scrollLeft < 10;
+        const isAtStart = container.scrollLeft <= 5;
+        const isAtEnd = container.scrollWidth - container.clientWidth - container.scrollLeft <= 5;
 
-        leftArrow.classList.toggle('hidden', isAtStart);
-        rightArrow.classList.toggle('hidden', isAtEnd);
+        if (isAtStart) {
+            leftArrow.classList.add('hidden');
+        } else {
+            leftArrow.classList.remove('hidden');
+        }
+
+        if (isAtEnd) {
+            rightArrow.classList.add('hidden');
+        } else {
+            rightArrow.classList.remove('hidden');
+        }
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const carouselIds = [
+            'carousel-trending',
+            'carousel-popular',
+            'carousel-latest',
+            'carousel-coming-soon'
+        ];
+
+        carouselIds.forEach(id => {
+            const container = document.getElementById(id);
+            if (container) {
+                container.addEventListener('scroll', () => updateCarouselArrows(id));
+                window.addEventListener('resize', () => updateCarouselArrows(id));
+                updateCarouselArrows(id); // Initial check
+            }
+        });
+    });
 </script>
 {% endblock %}

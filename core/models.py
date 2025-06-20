@@ -16,6 +16,14 @@ class Profile(models.Model):
         return self.username
 
 
+# Genre model
+class Genre(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 # Unified model for Movie, Series, MiniSeries, etc.
 class BaseContent(models.Model):
     CONTENT_TYPES = [
@@ -30,7 +38,7 @@ class BaseContent(models.Model):
     synonyms = models.TextField(blank=True, null=True)  # Comma-separated or list of synonyms
     description = models.TextField(blank=True)
     poster_url = models.URLField(blank=True)
-    genre = models.CharField(max_length=100)
+    genres = models.ManyToManyField(Genre, blank=True)
     rating = models.FloatField(default=0)
     release_year = models.IntegerField()
     content_type = models.CharField(max_length=20, choices=CONTENT_TYPES)

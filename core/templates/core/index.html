@@ -18,19 +18,31 @@
         <div id="carousel-movies"
             class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
             {% for item in trending %}
-            <a href="{% url 'content_detail' item.pk %}" class="block hover:scale-105 transition-transform">
-                <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+            <div
+                class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
+                <a href="{% url 'content_detail' item.pk %}">
                     <div class="relative">
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                            class="w-full h-72 object-cover rounded-t-lg" />
+                        {% if item.poster_url %}
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                        {% endif %}
+                        <div
+                            class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            {{ item.release_year }}
+                        </div>
+                        {% if item.rating %}
+                        <div
+                            class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-star text-yellow-400"></i>
+                            <span>{{ item.rating|floatformat:1 }}</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="p-2">
-                        <div class="font-bold text-lg leading-tight mt-2 mb-1">
-                            {{ item.title }}
+                    <div class="p-3">
+                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}
                         </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
             {% endfor %}
         </div>
         <button id="carousel-movies-right"
@@ -49,19 +61,31 @@
         <div id="carousel-series"
             class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
             {% for item in top_series %}
-            <a href="{% url 'content_detail' item.pk %}" class="block hover:scale-105 transition-transform">
-                <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+            <div
+                class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
+                <a href="{% url 'content_detail' item.pk %}">
                     <div class="relative">
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                            class="w-full h-72 object-cover rounded-t-lg" />
+                        {% if item.poster_url %}
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                        {% endif %}
+                        <div
+                            class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            {{ item.release_year }}
+                        </div>
+                        {% if item.rating %}
+                        <div
+                            class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-star text-yellow-400"></i>
+                            <span>{{ item.rating|floatformat:1 }}</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="p-2">
-                        <div class="font-bold text-lg leading-tight mt-2 mb-1">
-                            {{ item.title }}
+                    <div class="p-3">
+                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}
                         </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
             {% endfor %}
         </div>
         <button id="carousel-series-right"
@@ -80,19 +104,31 @@
         <div id="carousel-animated"
             class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
             {% for item in top_animated %}
-            <a href="{% url 'content_detail' item.pk %}" class="block hover:scale-105 transition-transform">
-                <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+            <div
+                class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
+                <a href="{% url 'content_detail' item.pk %}">
                     <div class="relative">
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                            class="w-full h-72 object-cover rounded-t-lg" />
+                        {% if item.poster_url %}
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                        {% endif %}
+                        <div
+                            class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            {{ item.release_year }}
+                        </div>
+                        {% if item.rating %}
+                        <div
+                            class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-star text-yellow-400"></i>
+                            <span>{{ item.rating|floatformat:1 }}</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="p-2">
-                        <div class="font-bold text-lg leading-tight mt-2 mb-1">
-                            {{ item.title }}
+                    <div class="p-3">
+                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}
                         </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
             {% endfor %}
         </div>
         <button id="carousel-animated-right"
@@ -111,19 +147,31 @@
         <div id="carousel-comics"
             class="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
             {% for item in top_comics %}
-            <a href="{% url 'content_detail' item.pk %}" class="block hover:scale-105 transition-transform">
-                <div class="bg-gray-800 rounded-lg flex-shrink-0 w-48 shadow-lg snap-start">
+            <div
+                class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
+                <a href="{% url 'content_detail' item.pk %}">
                     <div class="relative">
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                            class="w-full h-72 object-cover rounded-t-lg" />
+                        {% if item.poster_url %}
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                        {% endif %}
+                        <div
+                            class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            {{ item.release_year }}
+                        </div>
+                        {% if item.rating %}
+                        <div
+                            class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-star text-yellow-400"></i>
+                            <span>{{ item.rating|floatformat:1 }}</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="p-2">
-                        <div class="font-bold text-lg leading-tight mt-2 mb-1">
-                            {{ item.title }}
+                    <div class="p-3">
+                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}
                         </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
             {% endfor %}
         </div>
         <button id="carousel-comics-right"

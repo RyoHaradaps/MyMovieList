@@ -96,7 +96,7 @@
             <div class="mb-6">
                 <h2 class="font-semibold text-lg mb-1 flex items-center"><i
                         class="fa-solid fa-align-left mr-2"></i>Synopsis</h2>
-                <p class="text-gray-200 leading-relaxed">{{ content.synopsis }}</p>
+                <p class="text-gray-200 leading-relaxed">{{ content.description }}</p>
             </div>
             <div class="mb-4">
                 <h2 class="font-semibold text-lg mb-1 flex items-center"><i class="fa-solid fa-music mr-2"></i>Themes
@@ -147,10 +147,10 @@
                         <div class="mt-1 text-xs">
                             <span class="font-semibold text-gray-300">Voice Actors:</span>
                             {% for va in vas %}
-                                <span class="text-gray-400">
-                                    {{ va.name }}{% if va.language %} ({{ va.language }}){% endif%}
-                                </span>
-                                {% if not forloop.last %}, {% endif %} 
+                            <span class="text-gray-400">
+                                {{ va.name }}{% if va.language %} ({{ va.language }}){% endif%}
+                            </span>
+                            {% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         </div>
                         {% endif %}

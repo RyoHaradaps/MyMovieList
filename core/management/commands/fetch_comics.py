@@ -1,26 +1,23 @@
 from django.core.management.base import BaseCommand
-from core.models import BaseContent, Character, Staff
+from core.models import BaseContent, Genre
 import requests
 from django.conf import settings
 
 class Command(BaseCommand):
-    help = "Fetch and import comics from Comic Vine API"
+    help = "Fetch and import latest comics from ComicVine API"
 
     def handle(self, *args, **kwargs):
         API_KEY = getattr(settings, 'COMICVINE_API_KEY', None)
         if not API_KEY:
             self.stdout.write(self.style.ERROR("COMICVINE_API_KEY not set in settings."))
             return
-
-        url = f"https://comicvine.gamespot.com/api/issues/?api_key={API_KEY}&format=json&sort=cover_date:desc&limit=20"
+        url = f"https://comicvine.gamespot.com/api/issues/?api_key={API_KEY}&format=json&sort=cover_date:desc&limit=25"
         headers = {'User-Agent': 'MyMovieList/1.0'}
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
-            self.stdout.write(self.style.ERROR("Failed to fetch data from Comic Vine API."))
+            self.stdout.write(self.style.ERROR("Failed to fetch data from ComicVine API."))
             return
-
         data = response.json()
-
         for item in data.get('results', []):
             title = item.get('name') or item.get('volume', {}).get('name')
             description = item.get('description') or item.get('synopsis') or "No description available."
@@ -28,37 +25,21 @@ class Command(BaseCommand):
             year = item.get('cover_date', '')
             year = int(year.split('-')[0]) if year else 2000
             rating = item.get('score') or 0
-
+            genres = [item.get('volume', {}).get('name', 'Comic')]
             if not title:
                 continue
-
-            content, _ = BaseContent.objects.update_or_create(
+            content, created = BaseContent.objects.update_or_create(
                 title=title,
                 content_type='comic',
                 defaults={
                     'description': description,
                     'poster_url': poster or '',
-                    'genre': 'Comic',
                     'rating': rating,
                     'release_year': year
                 }
             )
-
-            # Characters
-            for char in item.get('character_credits', []):
-                Character.objects.update_or_create(
-                    name=char['name'],
-                    content=content,
-                    defaults={'image_url': char.get('image', {}).get('icon_url', ''), 'role': 'main'}
-                )
-
-            # Staff (writers, artists)
-            for person in item.get('person_credits', []):
-                Staff.objects.update_or_create(
-                    name=person['name'],
-                    role=person.get('role', ''),
-                    content=content,
-                    defaults={'image_url': person.get('image', {}).get('icon_url', '')}
-                )
-
-        self.stdout.write(self.style.SUCCESS("✅ Comics imported successfully from Comic Vine API."))
+            content.genres.clear()
+            for genre_name in genres:
+                genre_obj, _ = Genre.objects.get_or_create(name=genre_name)
+                content.genres.add(genre_obj)
+        self.stdout.write(self.style.SUCCESS("✅ Comics imported successfully from ComicVine API.")) 

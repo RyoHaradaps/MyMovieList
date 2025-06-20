@@ -1,7 +1,8 @@
 <nav class="bg-gray-900 text-white shadow px-6 py-3 flex items-center justify-between">
     <!-- Logo & Brand -->
-    <div class="flex items-center gap-3">
-        <svg class="w-8 h-8 text-sky-500" fill="currentColor" viewBox="0 0 24 24">
+    <a href="{% if profile %}{% url 'home' %}{% else %}{% url 'index' %}{% endif %}"
+        class="flex items-center gap-3 group">
+        <svg class="w-8 h-8 text-sky-500 group-hover:text-sky-400 transition" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 
         10 10 10-4.48 10-10S17.52 2 12 2zm0 3a1 
         1 0 011 1v6a1 1 0 01-1 1H7a1 1 0 
@@ -14,15 +15,17 @@
         011.84.8 9.988 9.988 0 01-2.88 
         3.72A9.931 9.931 0 0112 19z" />
         </svg>
-        <span class="font-bold text-2xl tracking-tight">MyMovieList</span>
-    </div>
+        <span class="font-bold text-2xl tracking-tight group-hover:text-gray-300 transition">MyMovieList</span>
+    </a>
 
     <!-- Navigation Links -->
     <div class="flex gap-6 items-center">
-        <a href="{% url 'index' %}" class="hover:text-sky-400 font-semibold transition">Movie</a>
-        <a href="#" class="hover:text-sky-400 font-semibold transition">Series</a>
-        <a href="#" class="hover:text-sky-400 font-semibold transition">AnimatedShow</a>
-        <a href="#" class="hover:text-sky-400 font-semibold transition">CartoonComic</a>
+        <a href="{% url 'movies_showcase' %}" class="hover:text-sky-400 font-semibold transition">Movie</a>
+        <a href="{% url 'series_showcase' %}" class="hover:text-sky-400 font-semibold transition">Series</a>
+        <a href="{% url 'anime_showcase' %}" class="hover:text-sky-400 font-semibold transition">Anime</a>
+        <a href="{% url 'animated_showcase' %}" class="hover:text-sky-400 font-semibold transition">Animated</a>
+        <a href="{% url 'manga_showcase' %}" class="hover:text-sky-400 font-semibold transition">Manga</a>
+        <a href="{% url 'comics_showcase' %}" class="hover:text-sky-400 font-semibold transition">Comic</a>
     </div>
 
     <!-- Icons Section (right side of navbar) -->
