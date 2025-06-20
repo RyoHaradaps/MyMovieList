@@ -317,6 +317,26 @@ def animated_list(request):
         'profile': profile,
     })
 
+def anime_list(request):
+    profile_id = request.session.get('profile_id')
+    profile = Profile.objects.get(id=profile_id) if profile_id else None
+    anime = BaseContent.objects.filter(content_type='anime').order_by('-release_year')
+    return render(request, 'core/list_page.html', {
+        'items': anime,
+        'type': 'Anime',
+        'profile': profile,
+    })
+
+def manga_list(request):
+    profile_id = request.session.get('profile_id')
+    profile = Profile.objects.get(id=profile_id) if profile_id else None
+    manga = BaseContent.objects.filter(content_type='manga').order_by('-release_year')
+    return render(request, 'core/list_page.html', {
+        'items': manga,
+        'type': 'Manga',
+        'profile': profile,
+    })
+
 def comic_list(request):
     profile_id = request.session.get('profile_id')
     profile = Profile.objects.get(id=profile_id) if profile_id else None
