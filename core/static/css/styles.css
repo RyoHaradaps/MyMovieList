@@ -15,3 +15,42 @@
 .scroll-smooth {
     scroll-behavior: smooth;
 }
+
+/* Carousel arrow styles */
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(30, 41, 59, 0.85);
+    /* bg-gray-800 with opacity */
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.carousel-arrow:hover {
+    background: rgba(59, 130, 246, 0.95);
+    /* blue-500 with opacity */
+}
+
+.carousel-arrow.left-0 {
+    left: 0.25rem;
+}
+
+.carousel-arrow.right-0 {
+    right: 0.25rem;
+}
+
+/* Ensure carousel container has enough bottom padding for arrows */
+.relative {
+    padding-bottom: 2.5rem;
+}

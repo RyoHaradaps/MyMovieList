@@ -101,6 +101,27 @@
         });
     </script>
 
+    {% block extra_scripts %}{% endblock %}
+    <script>
+        function scrollCarousel(id, direction) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const card = el.querySelector('.flex-shrink-0');
+            const scrollAmount = card ? card.offsetWidth + 16 : 300; // 16px gap
+            el.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+        // Enable horizontal scroll with mouse wheel
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.flex.overflow-x-auto').forEach(function (carousel) {
+                carousel.addEventListener('wheel', function (e) {
+                    if (e.deltaY === 0) return;
+                    e.preventDefault();
+                    carousel.scrollBy({ left: e.deltaY, behavior: 'smooth' });
+                });
+            });
+        });
+    </script>
+
 </body>
 
 </html>

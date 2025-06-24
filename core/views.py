@@ -425,18 +425,19 @@ def comic_list(request):
 def content_detail(request, pk):
     content = get_object_or_404(BaseContent, pk=pk)
     tmdb_data = None
-
-    # Fetch from TMDb for movies, series, animated shows
+    runtime = None
     if content.content_type in ['movie', 'series', 'animatedshow'] and content.tmdb_id:
-        tmdb_type = (
-            'movie' if content.content_type == 'movie'
-            else 'tv'  # TMDb uses 'tv' for both series and animated shows
-        )
+        tmdb_type = 'movie' if content.content_type == 'movie' else 'tv'
         api_key = settings.TMDB_API_KEY
         url = f'https://api.themoviedb.org/3/{tmdb_type}/{content.tmdb_id}?api_key={api_key}&language=en-US'
         resp = requests.get(url)
         if resp.status_code == 200:
             tmdb_data = resp.json()
+            if 'runtime' in tmdb_data and tmdb_data['runtime']:
+                minutes = tmdb_data['runtime']
+                hours = minutes // 60
+                minutes = minutes % 60
+                runtime = f"{hours}h {minutes}m" if hours else f"{minutes}m"
 
     related_entries = ContentRelation.objects.filter(from_content=content).select_related('to_content')
     characters = content.characters.all().prefetch_related('voice_actors')

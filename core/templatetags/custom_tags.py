@@ -8,3 +8,15 @@ def to(value, arg):
 @register.filter
 def equals(val, arg):
     return val == arg
+
+@register.filter
+def hours(runtime):
+    if runtime is None:
+        return ''
+    return runtime // 60
+
+@register.filter
+def minutes(runtime):
+    if runtime is None:
+        return ''
+    return runtime % 60

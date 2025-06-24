@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load custom_tags %}
 {% block title %}
 {% if tmdb_data %}
 {% if tmdb_data.title %}
@@ -116,10 +117,7 @@
                 <span class="bg-gray-700 px-3 py-1 rounded flex items-center gap-1">
                     <i class="fa-solid fa-circle-info" title="Runtime"></i>
                     {% if tmdb_data.runtime %}
-                    {% widthratio tmdb_data.runtime 60 1 as hours %}
-                    {% with tmdb_data.runtime|add:"-"|add:hours|add:"*60" as minutes %}
-                    {{ hours }}h {{ minutes }}m
-                    {% endwith %}
+                    {{ tmdb_data.runtime|hours }}h {{ tmdb_data.runtime|minutes }}m
                     {% else %}
                     N/A
                     {% endif %}
@@ -134,12 +132,8 @@
                 </span>
                 <span class="bg-gray-700 px-3 py-1 rounded flex items-center gap-1">
                     <i class="fa-solid fa-circle-info" title="Runtime"></i>
-                    {% with hours=tmdb_data.runtime|divisibleby:60|yesno:"1,0" %}
-                        {% widthratio tmdb_data.runtime 60 1 as hours %}
-                        {% with tmdb_data.runtime|add:"-"|add:hours|add:"*60" as mins %}
-                            {{ hours }}h {{ tmdb_data.runtime|add:"-%d"|format:hours|add:"*60" }}m
-                        {% endwith %}
-                    {% endwith %}
+                    {% if tmdb_data.runtime %}
+                    {{ tmdb_data.runtime|hours }}h {{ tmdb_data.runtime|minutes }}m
                     {% else %}
                     N/A
                     {% endif %}
@@ -195,36 +189,6 @@
                     {% endif %}
                 </p>
             </div>
-            <div class="mb-4">
-                <h2 class="font-semibold text-lg mb-1 flex items-center"><i class="fa-solid fa-music mr-2"></i>Themes
-                </h2>
-                {% if themes %}
-                <div>
-                    <span class="font-semibold text-blue-300">Opening Themes:</span>
-                    <ul class="list-disc ml-6">
-                        {% for theme in themes %}
-                        {% if theme.type == 'opening' %}
-                        <li>{{ theme.title }}{% if theme.artist %} <span class="text-gray-400">by {{ theme.artist
-                                }}</span>{% endif %}</li>
-                        {% endif %}
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="mt-2">
-                    <span class="font-semibold text-blue-300">Ending Themes:</span>
-                    <ul class="list-disc ml-6">
-                        {% for theme in themes %}
-                        {% if theme.type == 'ending' %}
-                        <li>{{ theme.title }}{% if theme.artist %} <span class="text-gray-400">by {{ theme.artist
-                                }}</span>{% endif %}</li>
-                        {% endif %}
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% else %}
-                <div class="text-gray-400">No theme data available.</div>
-                {% endif %}
-            </div>
         </div>
 
         <!-- Characters Tab -->
@@ -232,19 +196,26 @@
             <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-users mr-2"></i>Characters
             </h2>
             {% if characters %}
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {% for char in characters %}
-                <div class="bg-gray-800 rounded-lg p-3 flex gap-3 items-center">
-                    {% if char.profile_path %}
-                    <img src="https://image.tmdb.org/t/p/w185{{ char.profile_path }}" alt="{{ char.name }}"
-                        class="w-16 h-16 object-cover rounded shadow">
-                    {% endif %}
-                    <div>
-                        <div class="font-bold text-blue-300">{{ char.name }}</div>
-                        <div class="text-xs text-gray-400">{{ char.character }}</div>
+            <div class="relative">
+                <button class="carousel-arrow left-0" onclick="scrollCarousel('characters-carousel', -1)"><i
+                        class="fa-solid fa-chevron-left"></i></button>
+                <div id="characters-carousel"
+                    class="flex overflow-x-auto gap-4 pb-2 custom-scrollbar scrollbar-hide scroll-smooth snap-x">
+                    {% for char in characters %}
+                    <div class="bg-gray-800 rounded-lg p-3 flex gap-3 items-center flex-shrink-0 w-64 snap-start">
+                        {% if char.profile_path %}
+                        <img src="https://image.tmdb.org/t/p/w185{{ char.profile_path }}" alt="{{ char.name }}"
+                            class="w-16 h-16 object-cover rounded shadow">
+                        {% endif %}
+                        <div>
+                            <div class="font-bold text-blue-300">{{ char.name }}</div>
+                            <div class="text-xs text-gray-400">{{ char.character }}</div>
+                        </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+                <button class="carousel-arrow right-0" onclick="scrollCarousel('characters-carousel', 1)"><i
+                        class="fa-solid fa-chevron-right"></i></button>
             </div>
             {% else %}
             <div class="text-gray-400">No character data available.</div>
@@ -255,19 +226,26 @@
         <div x-show="tab === 'staff'" class="space-y-4">
             <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-user-tie mr-2"></i>Staff</h2>
             {% if staff %}
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {% for s in staff %}
-                <div class="bg-gray-800 rounded-lg p-3 flex gap-3 items-center">
-                    {% if s.profile_path %}
-                    <img src="https://image.tmdb.org/t/p/w185{{ s.profile_path }}" alt="{{ s.name }}"
-                        class="w-16 h-16 object-cover rounded shadow">
-                    {% endif %}
-                    <div>
-                        <div class="font-bold text-blue-300">{{ s.name }}</div>
-                        <div class="text-xs text-gray-400">{{ s.job }}</div>
+            <div class="relative">
+                <button class="carousel-arrow left-0" onclick="scrollCarousel('staff-carousel', -1)"><i
+                        class="fa-solid fa-chevron-left"></i></button>
+                <div id="staff-carousel"
+                    class="flex overflow-x-auto gap-4 pb-2 custom-scrollbar scrollbar-hide scroll-smooth snap-x">
+                    {% for s in staff %}
+                    <div class="bg-gray-800 rounded-lg p-3 flex gap-3 items-center flex-shrink-0 w-64 snap-start">
+                        {% if s.profile_path %}
+                        <img src="https://image.tmdb.org/t/p/w185{{ s.profile_path }}" alt="{{ s.name }}"
+                            class="w-16 h-16 object-cover rounded shadow">
+                        {% endif %}
+                        <div>
+                            <div class="font-bold text-blue-300">{{ s.name }}</div>
+                            <div class="text-xs text-gray-400">{{ s.job }}</div>
+                        </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
+                <button class="carousel-arrow right-0" onclick="scrollCarousel('staff-carousel', 1)"><i
+                        class="fa-solid fa-chevron-right"></i></button>
             </div>
             {% else %}
             <div class="text-gray-400">No staff data available.</div>
@@ -312,20 +290,27 @@
             <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-play-circle mr-2"></i>Videos
             </h2>
             {% if videos %}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {% for video in videos %}
-                {% if video.site == 'YouTube' %}
-                {% if video.type == 'Trailer' or video.type == 'Teaser' %}
-                <div>
-                    <div class="font-semibold text-blue-300 mb-1">{{ video.name }}</div>
-                    <div class="aspect-w-16 aspect-h-9 w-full rounded overflow-hidden">
-                        <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ video.key }}"
-                            frameborder="0" allowfullscreen class="w-full h-64"></iframe>
+            <div class="relative">
+                <button class="carousel-arrow left-0" onclick="scrollCarousel('videos-carousel', -1)"><i
+                        class="fa-solid fa-chevron-left"></i></button>
+                <div id="videos-carousel"
+                    class="flex overflow-x-auto gap-6 pb-2 custom-scrollbar scrollbar-hide scroll-smooth snap-x">
+                    {% for video in videos %}
+                    {% if video.site == 'YouTube' %}
+                    {% if video.type == 'Trailer' or video.type == 'Teaser' %}
+                    <div class="flex-shrink-0 w-96 snap-start">
+                        <div class="font-semibold text-blue-300 mb-1">{{ video.name }}</div>
+                        <div class="aspect-w-16 aspect-h-9 w-full rounded overflow-hidden">
+                            <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ video.key }}"
+                                frameborder="0" allowfullscreen class="w-full h-64"></iframe>
+                        </div>
                     </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
                 </div>
-                {% endif %}
-                {% endif %}
-                {% endfor %}
+                <button class="carousel-arrow right-0" onclick="scrollCarousel('videos-carousel', 1)"><i
+                        class="fa-solid fa-chevron-right"></i></button>
             </div>
             {% else %}
             <div class="text-gray-400">No videos available.</div>
