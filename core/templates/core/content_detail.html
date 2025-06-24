@@ -47,12 +47,7 @@
             <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200"
                 :class="tab === 'characters' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'"
                 @click="tab = 'characters'">
-                <i class="fa-solid fa-users mr-1"></i>Characters
-            </button>
-            <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200"
-                :class="tab === 'staff' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'"
-                @click="tab = 'staff'">
-                <i class="fa-solid fa-user-tie mr-1"></i>Staff
+                <i class="fa-solid fa-users mr-1"></i>Cast & Crew
             </button>
             {% if content.content_type and content.content_type != 'movie' or tmdb_data and tmdb_data.first_air_date %}
             <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200"
@@ -114,14 +109,13 @@
                     {{ genre.name }}{% if not forloop.last %}, {% endif %}
                     {% endfor %}
                 </span>
+                {# Hide runtime for series/animatedshows #}
+                {% if tmdb_data and tmdb_data.runtime and tmdb_data.title %}
                 <span class="bg-gray-700 px-3 py-1 rounded flex items-center gap-1">
                     <i class="fa-solid fa-circle-info" title="Runtime"></i>
-                    {% if tmdb_data.runtime %}
                     {{ tmdb_data.runtime|hours }}h {{ tmdb_data.runtime|minutes }}m
-                    {% else %}
-                    N/A
-                    {% endif %}
                 </span>
+                {% endif %}
                 {% endif %}
                 {% if content and content.content_type == 'movie' %}
                 <span class="bg-gray-700 px-3 py-1 rounded flex items-center gap-1">
@@ -130,6 +124,7 @@
                     {% if not forloop.last %}, {% endif %}
                     {% endfor %}
                 </span>
+                {# Only show runtime for movies #}
                 <span class="bg-gray-700 px-3 py-1 rounded flex items-center gap-1">
                     <i class="fa-solid fa-circle-info" title="Runtime"></i>
                     {% if tmdb_data.runtime %}
@@ -139,7 +134,7 @@
                     {% endif %}
                 </span>
                 {% endif %}
-                {% if content and content.content_type != 'movie' %}
+                {% if content.content_type and content.content_type != 'movie' %}
                 <span class="bg-gray-700 px-3 py-1 rounded flex items-center gap-1">
                     <i class="fa-solid fa-clapperboard" title="Content Type"></i> {{ content.content_type|title }}
                 </span>
@@ -161,17 +156,6 @@
                     {{ content.release_year }}
                     {% endif %}
                 </span>
-                {% if content.content_type and content.content_type != 'movie' %}
-                <span class="bg-gray-700 px-3 py-1 rounded flex items-center gap-1">
-                    <i class="fa-solid fa-list-ol" title="Episodes"></i>
-                    {{ content.episodes }}
-                </span>
-                {% elif tmdb_data and tmdb_data.first_air_date %}
-                <span class="bg-gray-700 px-3 py-1 rounded flex items-center gap-1">
-                    <i class="fa-solid fa-list-ol" title="Episodes"></i>
-                    {{ content.episodes }}
-                </span>
-                {% endif %}
                 <span class="bg-gray-700 px-3 py-1 rounded flex items-center gap-1">
                     <i class="fa-solid fa-star text-yellow-400" title="Rating"></i>
                     {% if tmdb_data and tmdb_data.vote_average %}{{ tmdb_data.vote_average }}{% else %}{{ content.rating
@@ -193,11 +177,12 @@
 
         <!-- Characters Tab -->
         <div x-show="tab === 'characters'" class="space-y-4">
-            <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-users mr-2"></i>Characters
+            <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-users mr-2"></i>Cast
             </h2>
             {% if characters %}
             <div class="relative">
-                <button class="carousel-arrow left-0" onclick="scrollCarousel('characters-carousel', -1)"><i
+                <button class="carousel-arrow left-0 absolute top-1/2 -translate-y-1/2 z-10"
+                    onclick="scrollCarousel('characters-carousel', -1)"><i
                         class="fa-solid fa-chevron-left"></i></button>
                 <div id="characters-carousel"
                     class="flex overflow-x-auto gap-4 pb-2 custom-scrollbar scrollbar-hide scroll-smooth snap-x">
@@ -214,21 +199,20 @@
                     </div>
                     {% endfor %}
                 </div>
-                <button class="carousel-arrow right-0" onclick="scrollCarousel('characters-carousel', 1)"><i
+                <button class="carousel-arrow right-0 absolute top-1/2 -translate-y-1/2 z-10"
+                    onclick="scrollCarousel('characters-carousel', 1)"><i
                         class="fa-solid fa-chevron-right"></i></button>
             </div>
             {% else %}
             <div class="text-gray-400">No character data available.</div>
             {% endif %}
-        </div>
 
-        <!-- Staff Tab -->
-        <div x-show="tab === 'staff'" class="space-y-4">
-            <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-user-tie mr-2"></i>Staff</h2>
+            <!-- Crew Carousel below Cast -->
+            <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-user-tie mr-2"></i>Crew</h2>
             {% if staff %}
             <div class="relative">
-                <button class="carousel-arrow left-0" onclick="scrollCarousel('staff-carousel', -1)"><i
-                        class="fa-solid fa-chevron-left"></i></button>
+                <button class="carousel-arrow left-0 absolute top-1/2 -translate-y-1/2 z-10"
+                    onclick="scrollCarousel('staff-carousel', -1)"><i class="fa-solid fa-chevron-left"></i></button>
                 <div id="staff-carousel"
                     class="flex overflow-x-auto gap-4 pb-2 custom-scrollbar scrollbar-hide scroll-smooth snap-x">
                     {% for s in staff %}
@@ -239,24 +223,67 @@
                         {% endif %}
                         <div>
                             <div class="font-bold text-blue-300">{{ s.name }}</div>
-                            <div class="text-xs text-gray-400">{{ s.job }}</div>
+                            <div class="text-xs text-gray-400">
+                                {% if s.jobs %}
+                                {{ s.jobs|join:", " }}
+                                {% else %}
+                                {{ s.job }}
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
-                <button class="carousel-arrow right-0" onclick="scrollCarousel('staff-carousel', 1)"><i
-                        class="fa-solid fa-chevron-right"></i></button>
+                <button class="carousel-arrow right-0 absolute top-1/2 -translate-y-1/2 z-10"
+                    onclick="scrollCarousel('staff-carousel', 1)"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             {% else %}
             <div class="text-gray-400">No staff data available.</div>
             {% endif %}
         </div>
 
-        <!-- Episodes Tab (placeholder) -->
+        <!-- Episodes Tab (season/episode list) -->
         <div x-show="tab === 'episodes'" class="space-y-4">
             <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-list-ol mr-2"></i>Episodes
             </h2>
-            <div class="text-gray-400">Episode list coming soon...</div>
+            {% if seasons and seasons|length > 0 %}
+            {% for season in seasons %}
+            <div class="bg-gray-800 rounded-lg p-4 mb-6">
+                <div class="flex items-center gap-4 mb-2">
+                    {% if season.poster_path %}
+                    <img src="https://image.tmdb.org/t/p/w185{{ season.poster_path }}" alt="{{ season.name }} poster"
+                        class="w-20 h-28 object-cover rounded shadow">
+                    {% endif %}
+                    <div>
+                        <div class="text-xl font-bold text-blue-300">{{ season.name }}</div>
+                        <div class="text-gray-400 text-sm mb-1">{{ season.overview }}</div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-gray-200 text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-700">
+                                <th class="px-2 py-1">#</th>
+                                <th class="px-2 py-1">Title</th>
+                                <th class="px-2 py-1">Overview</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ep in season.episodes %}
+                            <tr class="border-b border-gray-700">
+                                <td class="px-2 py-1 font-bold">{{ ep.episode_number }}</td>
+                                <td class="px-2 py-1">{{ ep.name }}</td>
+                                <td class="px-2 py-1">{{ ep.overview|default:'No overview.' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-gray-400">No episode data available.</div>
+            {% endif %}
         </div>
 
         <!-- Related Tab -->
@@ -291,8 +318,8 @@
             </h2>
             {% if videos %}
             <div class="relative">
-                <button class="carousel-arrow left-0" onclick="scrollCarousel('videos-carousel', -1)"><i
-                        class="fa-solid fa-chevron-left"></i></button>
+                <button class="carousel-arrow left-0 absolute top-1/2 -translate-y-1/2 z-10"
+                    onclick="scrollCarousel('videos-carousel', -1)"><i class="fa-solid fa-chevron-left"></i></button>
                 <div id="videos-carousel"
                     class="flex overflow-x-auto gap-6 pb-2 custom-scrollbar scrollbar-hide scroll-smooth snap-x">
                     {% for video in videos %}
@@ -309,8 +336,8 @@
                     {% endif %}
                     {% endfor %}
                 </div>
-                <button class="carousel-arrow right-0" onclick="scrollCarousel('videos-carousel', 1)"><i
-                        class="fa-solid fa-chevron-right"></i></button>
+                <button class="carousel-arrow right-0 absolute top-1/2 -translate-y-1/2 z-10"
+                    onclick="scrollCarousel('videos-carousel', 1)"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             {% else %}
             <div class="text-gray-400">No videos available.</div>

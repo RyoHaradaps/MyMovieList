@@ -9,6 +9,7 @@ import requests
 from django.conf import settings
 from .services import get_latest_animated_movies, get_upcoming_animated_movies
 from django.http import Http404
+from collections import defaultdict
 
 # Create your views here.
 def index(request):
@@ -961,6 +962,84 @@ def manga_showcase(request):
         'coming_soon': coming_soon,
     })
 
+def group_staff_by_person(staff_list):
+    grouped = {}
+    for s in staff_list:
+        key = s.get('id') or s.get('name')
+        if key not in grouped:
+            grouped[key] = {
+                'id': s.get('id'),
+                'name': s.get('name'),
+                'profile_path': s.get('profile_path'),
+                'jobs': [s.get('job')],
+            }
+        else:
+            if s.get('job') not in grouped[key]['jobs']:
+                grouped[key]['jobs'].append(s.get('job'))
+    return list(grouped.values())
+
+def fetch_tmdb_seasons_and_episodes(tmdb_id):
+    api_key = settings.TMDB_API_KEY
+    url = f'https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={api_key}&language=en-US'
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        return []
+    show_data = resp.json()
+    seasons = show_data.get('seasons', [])
+    all_seasons = []
+    for season in seasons:
+        season_number = season.get('season_number')
+        if season_number == 0:
+            continue  # skip specials
+        season_url = f'https://api.themoviedb.org/3/tv/{tmdb_id}/season/{season_number}?api_key={api_key}&language=en-US'
+        season_resp = requests.get(season_url)
+        if season_resp.status_code != 200:
+            continue
+        season_data = season_resp.json()
+        all_seasons.append({
+            'season_number': season_data.get('season_number'),
+            'name': season_data.get('name'),
+            'overview': season_data.get('overview'),
+            'poster_path': season_data.get('poster_path'),
+            'episodes': season_data.get('episodes', []),
+        })
+    return all_seasons
+
+def tmdb_series_detail(request, tmdb_id):
+    api_key = settings.TMDB_API_KEY
+    url = f'https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={api_key}&language=en-US'
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        raise Http404("Series not found in TMDb")
+    tmdb_data = resp.json()
+
+    # Fetch credits (cast and crew)
+    credits_url = f'https://api.themoviedb.org/3/tv/{tmdb_id}/credits?api_key={api_key}'
+    credits_resp = requests.get(credits_url)
+    credits = credits_resp.json() if credits_resp.status_code == 200 else {}
+    cast = credits.get('cast', [])
+    crew = credits.get('crew', [])
+    grouped_staff = group_staff_by_person(crew)
+
+    # Fetch videos
+    videos_url = f'https://api.themoviedb.org/3/tv/{tmdb_id}/videos?api_key={api_key}'
+    videos_resp = requests.get(videos_url)
+    videos = videos_resp.json().get('results', []) if videos_resp.status_code == 200 else []
+
+    # Fetch seasons and episodes
+    seasons = fetch_tmdb_seasons_and_episodes(tmdb_id)
+
+    return render(request, 'core/content_detail.html', {
+        'content': None,
+        'tmdb_data': tmdb_data,
+        'related_entries': [],
+        'characters': cast,
+        'staff': grouped_staff,
+        'themes': [],
+        'videos': videos,
+        'seasons': seasons,
+    })
+
 def tmdb_movie_detail(request, tmdb_id):
     api_key = settings.TMDB_API_KEY
     url = f'https://api.themoviedb.org/3/movie/{tmdb_id}?api_key={api_key}&language=en-US'
@@ -975,6 +1054,7 @@ def tmdb_movie_detail(request, tmdb_id):
     credits = credits_resp.json() if credits_resp.status_code == 200 else {}
     cast = credits.get('cast', [])
     crew = credits.get('crew', [])
+    grouped_staff = group_staff_by_person(crew)
 
     # Fetch videos
     videos_url = f'https://api.themoviedb.org/3/movie/{tmdb_id}/videos?api_key={api_key}'
@@ -986,30 +1066,8 @@ def tmdb_movie_detail(request, tmdb_id):
         'tmdb_data': tmdb_data,
         'related_entries': [],
         'characters': cast,
-        'staff': crew,
+        'staff': grouped_staff,
         'themes': [],
         'videos': videos,
-    })
-
-def tmdb_series_detail(request, tmdb_id):
-    api_key = settings.TMDB_API_KEY
-    url = f'https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={api_key}&language=en-US'
-    resp = requests.get(url)
-    if resp.status_code != 200:
-        raise Http404("Series not found in TMDb")
-    tmdb_data = resp.json()
-
-    # Fetch videos
-    videos_url = f'https://api.themoviedb.org/3/tv/{tmdb_id}/videos?api_key={api_key}'
-    videos_resp = requests.get(videos_url)
-    videos = videos_resp.json().get('results', []) if videos_resp.status_code == 200 else []
-
-    return render(request, 'core/content_detail.html', {
-        'content': None,
-        'tmdb_data': tmdb_data,
-        'related_entries': [],
-        'characters': [],
-        'staff': [],
-        'themes': [],
-        'videos': videos,
+        'seasons': [],  # Movies don't have seasons
     })
