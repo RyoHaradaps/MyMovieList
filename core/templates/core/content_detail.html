@@ -242,49 +242,147 @@
             {% endif %}
         </div>
 
-        <!-- Episodes Tab (season/episode list) -->
+        <!-- Episodes Tab (collapsible season panels) -->
         <div x-show="tab === 'episodes'" class="space-y-4">
             <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-list-ol mr-2"></i>Episodes
             </h2>
             {% if seasons and seasons|length > 0 %}
-            {% for season in seasons %}
-            <div class="bg-gray-800 rounded-lg p-4 mb-6">
-                <div class="flex items-center gap-4 mb-2">
-                    {% if season.poster_path %}
-                    <img src="https://image.tmdb.org/t/p/w185{{ season.poster_path }}" alt="{{ season.name }} poster"
-                        class="w-20 h-28 object-cover rounded shadow">
-                    {% endif %}
-                    <div>
-                        <div class="text-xl font-bold text-blue-300">{{ season.name }}</div>
-                        <div class="text-gray-400 text-sm mb-1">{{ season.overview }}</div>
+            <div class="relative">
+                <div id="seasonsScrollBox" class="space-y-3 max-h-[500px] overflow-y-auto pr-8">
+                    {% for season in seasons %}
+                    <div x-data="{ open: false }" class="bg-gray-800 rounded-lg">
+                        <button @click="open = !open"
+                            class="w-full flex items-center justify-between px-4 py-3 focus:outline-none">
+                            <div>
+                                <span class="text-lg font-bold text-blue-300">{{ season.name }}</span>
+                                <span class="text-gray-400 text-sm ml-2">{{ season.overview }}</span>
+                            </div>
+                            <span>
+                                <i :class="open ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
+                            </span>
+                        </button>
+                        <div x-show="open" x-transition class="px-4 pb-4">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-left text-gray-200 text-sm">
+                                    <thead>
+                                        <tr class="border-b border-gray-700">
+                                            <th class="px-2 py-1">#</th>
+                                            <th class="px-2 py-1">Title</th>
+                                            <th class="px-2 py-1">Overview</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ep in season.episodes %}
+                                        <tr class="border-b border-gray-700">
+                                            <td class="px-2 py-1 font-bold">{{ ep.episode_number }}</td>
+                                            <td class="px-2 py-1">{{ ep.name }}</td>
+                                            <td class="px-2 py-1">{{ ep.overview|default:'No overview.' }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="scroll-progress hidden" id="seasonsScrollProgress"
+                    style="top: 20px; right: 8px; height: 500px;">
+                    <div class="scroll-label">SCROLL TO TOP</div>
+                    <div class="progress-bar" style="height: 115px;">
+                        <div class="bar" id="seasonsScrollBar"></div>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-left text-gray-200 text-sm">
-                        <thead>
-                            <tr class="border-b border-gray-700">
-                                <th class="px-2 py-1">#</th>
-                                <th class="px-2 py-1">Title</th>
-                                <th class="px-2 py-1">Overview</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for ep in season.episodes %}
-                            <tr class="border-b border-gray-700">
-                                <td class="px-2 py-1 font-bold">{{ ep.episode_number }}</td>
-                                <td class="px-2 py-1">{{ ep.name }}</td>
-                                <td class="px-2 py-1">{{ ep.overview|default:'No overview.' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
             </div>
-            {% endfor %}
             {% else %}
             <div class="text-gray-400">No episode data available.</div>
             {% endif %}
         </div>
+        <style>
+            .scroll-progress {
+                position: absolute;
+                right: 8px;
+                top: 20px;
+                height: 500px;
+                display: flex;
+                align-items: center;
+                z-index: 10;
+                cursor: pointer;
+                transition: opacity 0.4s ease, transform 0.4s ease;
+            }
+
+            .scroll-progress.hidden {
+                opacity: 0;
+                pointer-events: none;
+                transform: translateY(20px);
+            }
+
+            .scroll-label {
+                writing-mode: vertical-rl;
+                transform: rotate(180deg);
+                margin-right: 12px;
+                font-size: 10px;
+                color: #a0a0a0;
+                font-weight: 500;
+                letter-spacing: 2.5px;
+                user-select: none;
+            }
+
+            .progress-bar {
+                width: 4px;
+                height: 115px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 3px;
+                overflow: hidden;
+            }
+
+            .progress-bar .bar {
+                width: 100%;
+                height: 0%;
+                background: linear-gradient(180deg, #33ccff, #ff33cc);
+                border-radius: 3px;
+                transition: height 0.1s linear;
+            }
+
+            /* Hide native scrollbar for the seasons scroll box */
+            #seasonsScrollBox {
+                scrollbar-width: none;
+                /* Firefox */
+                -ms-overflow-style: none;
+                /* IE 10+ */
+            }
+
+            #seasonsScrollBox::-webkit-scrollbar {
+                display: none;
+                /* Chrome, Safari, Opera */
+            }
+        </style>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const seasonsBox = document.getElementById("seasonsScrollBox");
+                const progress = document.getElementById("seasonsScrollProgress");
+                const bar = document.getElementById("seasonsScrollBar");
+                if (seasonsBox && progress && bar) {
+                    seasonsBox.addEventListener("scroll", () => {
+                        const scrollTop = seasonsBox.scrollTop;
+                        const scrollHeight = seasonsBox.scrollHeight - seasonsBox.clientHeight;
+                        const scrollPercent = (scrollTop / scrollHeight) * 100;
+                        bar.style.height = scrollPercent + "%";
+                        if (scrollTop > 50) {
+                            progress.classList.remove("hidden");
+                        } else {
+                            progress.classList.add("hidden");
+                        }
+                    });
+                    progress.addEventListener("click", () => {
+                        seasonsBox.scrollTo({
+                            top: 0,
+                            behavior: "smooth"
+                        });
+                    });
+                }
+            });
+        </script>
 
         <!-- Related Tab -->
         <div x-show="tab === 'related'" class="space-y-4">
@@ -324,15 +422,14 @@
                     class="flex overflow-x-auto gap-6 pb-2 custom-scrollbar scrollbar-hide scroll-smooth snap-x">
                     {% for video in videos %}
                     {% if video.site == 'YouTube' %}
-                    {% if video.type == 'Trailer' or video.type == 'Teaser' %}
                     <div class="flex-shrink-0 w-96 snap-start">
-                        <div class="font-semibold text-blue-300 mb-1">{{ video.name }}</div>
+                        <div class="font-semibold text-blue-300 mb-1">{{ video.name }} <span
+                                class="text-xs text-gray-400">({{ video.type }})</span></div>
                         <div class="aspect-w-16 aspect-h-9 w-full rounded overflow-hidden">
                             <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ video.key }}"
                                 frameborder="0" allowfullscreen class="w-full h-64"></iframe>
                         </div>
                     </div>
-                    {% endif %}
                     {% endif %}
                     {% endfor %}
                 </div>
