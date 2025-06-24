@@ -36,4 +36,4 @@ class Command(BaseCommand):
             for genre_name in genres:
                 genre_obj, _ = Genre.objects.get_or_create(name=genre_name)
                 content.genres.add(genre_obj)
-        self.stdout.write(self.style.SUCCESS("✅ Manga imported successfully from Jikan API.")) 
+        self.stdout.write(self.style.SUCCESS("✅ Manga imported successfully from Jikan API."))

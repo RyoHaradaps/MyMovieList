@@ -12,27 +12,39 @@
         {% for item in trending %}
         <div
             class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
-            <a href="{% url 'content_detail' item.pk %}">
-                <div class="relative">
-                    {% if item.poster_url %}
-                    <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
-                    {% endif %}
-                    <div
-                        class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        {{ item.release_year }}
-                    </div>
-                    {% if item.rating %}
-                    <div
-                        class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                        <i class="fa-solid fa-star text-yellow-400"></i>
-                        <span>{{ item.rating|floatformat:1 }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="p-3">
-                    <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}</div>
-                </div>
-            </a>
+            {% if type == 'movie' %}
+            <a href="{% url 'tmdb_movie_detail' item.pk %}">
+                {% elif type == 'series' or type == 'animated' %}
+                <a href="{% url 'tmdb_series_detail' item.pk %}">
+                    {% else %}
+                    <a href="#">
+                        {% endif %}
+                        <div class="relative">
+                            {% if item.poster_url %}
+                            <img src="{{ item.poster_url }}"
+                                alt="{% if item.title %}{{ item.title }}{% elif item.name %}{{ item.name }}{% else %}Untitled{% endif %}"
+                                class="w-full h-64 object-cover">
+                            {% endif %}
+                            <div
+                                class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                {{ item.release_year }}
+                            </div>
+                            {% if item.rating %}
+                            <div
+                                class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                                <i class="fa-solid fa-star text-yellow-400"></i>
+                                <span>{{ item.rating|floatformat:1 }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-3">
+                            <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">
+                                {% if item.title %}{{ item.title }}
+                                {% elif item.name %}{{ item.name }}
+                                {% else %}Untitled{% endif %}
+                            </div>
+                        </div>
+                    </a>
         </div>
         {% empty %}
         <div class="text-gray-400">No trending items.</div>
@@ -53,27 +65,39 @@
         {% for item in popular %}
         <div
             class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
-            <a href="{% url 'content_detail' item.pk %}">
-                <div class="relative">
-                    {% if item.poster_url %}
-                    <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
-                    {% endif %}
-                    <div
-                        class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        {{ item.release_year }}
-                    </div>
-                    {% if item.rating %}
-                    <div
-                        class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                        <i class="fa-solid fa-star text-yellow-400"></i>
-                        <span>{{ item.rating|floatformat:1 }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="p-3">
-                    <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}</div>
-                </div>
-            </a>
+            {% if type == 'movie' %}
+            <a href="{% url 'tmdb_movie_detail' item.pk %}">
+                {% elif type == 'series' or type == 'animated' %}
+                <a href="{% url 'tmdb_series_detail' item.pk %}">
+                    {% else %}
+                    <a href="#">
+                        {% endif %}
+                        <div class="relative">
+                            {% if item.poster_url %}
+                            <img src="{{ item.poster_url }}"
+                                alt="{% if item.title %}{{ item.title }}{% elif item.name %}{{ item.name }}{% else %}Untitled{% endif %}"
+                                class="w-full h-64 object-cover">
+                            {% endif %}
+                            <div
+                                class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                {{ item.release_year }}
+                            </div>
+                            {% if item.rating %}
+                            <div
+                                class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                                <i class="fa-solid fa-star text-yellow-400"></i>
+                                <span>{{ item.rating|floatformat:1 }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-3">
+                            <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">
+                                {% if item.title %}{{ item.title }}
+                                {% elif item.name %}{{ item.name }}
+                                {% else %}Untitled{% endif %}
+                            </div>
+                        </div>
+                    </a>
         </div>
         {% empty %}
         <div class="text-gray-400">No popular items.</div>
@@ -94,27 +118,39 @@
         {% for item in latest %}
         <div
             class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
-            <a href="{% url 'content_detail' item.pk %}">
-                <div class="relative">
-                    {% if item.poster_url %}
-                    <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
-                    {% endif %}
-                    <div
-                        class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        {{ item.release_year }}
-                    </div>
-                    {% if item.rating %}
-                    <div
-                        class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                        <i class="fa-solid fa-star text-yellow-400"></i>
-                        <span>{{ item.rating|floatformat:1 }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="p-3">
-                    <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}</div>
-                </div>
-            </a>
+            {% if type == 'movie' %}
+            <a href="{% url 'tmdb_movie_detail' item.pk %}">
+                {% elif type == 'series' or type == 'animated' %}
+                <a href="{% url 'tmdb_series_detail' item.pk %}">
+                    {% else %}
+                    <a href="#">
+                        {% endif %}
+                        <div class="relative">
+                            {% if item.poster_url %}
+                            <img src="{{ item.poster_url }}"
+                                alt="{% if item.title %}{{ item.title }}{% elif item.name %}{{ item.name }}{% else %}Untitled{% endif %}"
+                                class="w-full h-64 object-cover">
+                            {% endif %}
+                            <div
+                                class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                {{ item.release_year }}
+                            </div>
+                            {% if item.rating %}
+                            <div
+                                class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                                <i class="fa-solid fa-star text-yellow-400"></i>
+                                <span>{{ item.rating|floatformat:1 }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-3">
+                            <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">
+                                {% if item.title %}{{ item.title }}
+                                {% elif item.name %}{{ item.name }}
+                                {% else %}Untitled{% endif %}
+                            </div>
+                        </div>
+                    </a>
         </div>
         {% empty %}
         <div class="text-gray-400">No latest items.</div>
@@ -136,27 +172,39 @@
         {% for item in coming_soon %}
         <div
             class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
-            <a href="{% url 'content_detail' item.pk %}">
-                <div class="relative">
-                    {% if item.poster_url %}
-                    <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
-                    {% endif %}
-                    <div
-                        class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        {{ item.release_year }}
-                    </div>
-                    {% if item.rating %}
-                    <div
-                        class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                        <i class="fa-solid fa-star text-yellow-400"></i>
-                        <span>{{ item.rating|floatformat:1 }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="p-3">
-                    <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}</div>
-                </div>
-            </a>
+            {% if type == 'movie' %}
+            <a href="{% url 'tmdb_movie_detail' item.pk %}">
+                {% elif type == 'series' or type == 'animated' %}
+                <a href="{% url 'tmdb_series_detail' item.pk %}">
+                    {% else %}
+                    <a href="#">
+                        {% endif %}
+                        <div class="relative">
+                            {% if item.poster_url %}
+                            <img src="{{ item.poster_url }}"
+                                alt="{% if item.title %}{{ item.title }}{% elif item.name %}{{ item.name }}{% else %}Untitled{% endif %}"
+                                class="w-full h-64 object-cover">
+                            {% endif %}
+                            <div
+                                class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                {{ item.release_year }}
+                            </div>
+                            {% if item.rating %}
+                            <div
+                                class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                                <i class="fa-solid fa-star text-yellow-400"></i>
+                                <span>{{ item.rating|floatformat:1 }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-3">
+                            <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">
+                                {% if item.title %}{{ item.title }}
+                                {% elif item.name %}{{ item.name }}
+                                {% else %}Untitled{% endif %}
+                            </div>
+                        </div>
+                    </a>
         </div>
         {% empty %}
         <div class="text-gray-400">No coming soon items.</div>

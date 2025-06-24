@@ -1,18 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponse
 from .models import BaseContent, Profile, Watchlist, ContentRelation, Genre
 from datetime import datetime, timedelta
 from django.contrib.auth.hashers import make_password, check_password
 from django.db import models
 from django.utils import timezone
-from collections import Counter
 import requests
 from django.conf import settings
 from .services import get_latest_animated_movies, get_upcoming_animated_movies
+from django.http import Http404
 
 # Create your views here.
 def index(request):
@@ -112,6 +108,11 @@ def home_view(request):
 
     try:
         profile = Profile.objects.get(id=profile_id)
+        if not profile:
+            # If profile_id in session is invalid, clear it and redirect to index
+            if 'profile_id' in request.session:
+                del request.session['profile_id']
+            return redirect('index')
     except Profile.DoesNotExist:
         # If profile_id in session is invalid, clear it and redirect to index
         if 'profile_id' in request.session:
@@ -201,10 +202,6 @@ def search(request):
     # Dummy implementation, just renders the index page for now
     return render(request, 'core/index.html', {'movies': []})
 
-def movies_view(request):
-    movies = BaseContent.objects.filter(content_type='movie')
-    return render(request, 'core/movies.html', {'movies': movies})
-
 def profile(request, username):
     profile = get_object_or_404(Profile, username=username)
     watchlist = Watchlist.objects.filter(profile=profile)
@@ -289,111 +286,171 @@ def profile_edit(request):
 
 def movie_list(request):
     profile_id = request.session.get('profile_id')
-    profile = Profile.objects.get(id=profile_id) if profile_id else None
-    movies = BaseContent.objects.filter(content_type='movie').order_by('-release_year')
+    if not profile_id:
+        return redirect('login')
+    
+    try:
+        profile = Profile.objects.get(id=profile_id)
+    except Profile.DoesNotExist:
+        return redirect('login')
+    
+    # Get user's watchlist for movies only
+    watchlist_items = Watchlist.objects.filter(
+        profile=profile,
+        content__content_type='movie'
+    ).select_related('content').order_by('-added_on')
+    
     return render(request, 'core/list_page.html', {
-        'items': movies,
+        'items': [item.content for item in watchlist_items],
         'type': 'Movie',
         'profile': profile,
+        'is_watchlist': True,
     })
 
 def series_list(request):
     profile_id = request.session.get('profile_id')
-    profile = Profile.objects.get(id=profile_id) if profile_id else None
-    series = BaseContent.objects.filter(content_type='series').order_by('-release_year')
+    if not profile_id:
+        return redirect('login')
+    
+    try:
+        profile = Profile.objects.get(id=profile_id)
+    except Profile.DoesNotExist:
+        return redirect('login')
+    
+    # Get user's watchlist for series only
+    watchlist_items = Watchlist.objects.filter(
+        profile=profile,
+        content__content_type='series'
+    ).select_related('content').order_by('-added_on')
+    
     return render(request, 'core/list_page.html', {
-        'items': series,
+        'items': [item.content for item in watchlist_items],
         'type': 'Series',
         'profile': profile,
+        'is_watchlist': True,
     })
 
 def animated_list(request):
     profile_id = request.session.get('profile_id')
-    profile = Profile.objects.get(id=profile_id) if profile_id else None
-    animated = BaseContent.objects.filter(content_type='animatedshow').order_by('-release_year')
+    if not profile_id:
+        return redirect('login')
+    
+    try:
+        profile = Profile.objects.get(id=profile_id)
+    except Profile.DoesNotExist:
+        return redirect('login')
+    
+    # Get user's watchlist for animated shows only
+    watchlist_items = Watchlist.objects.filter(
+        profile=profile,
+        content__content_type='animatedshow'
+    ).select_related('content').order_by('-added_on')
+    
     return render(request, 'core/list_page.html', {
-        'items': animated,
+        'items': [item.content for item in watchlist_items],
         'type': 'Animated',
         'profile': profile,
+        'is_watchlist': True,
     })
 
 def anime_list(request):
     profile_id = request.session.get('profile_id')
-    profile = Profile.objects.get(id=profile_id) if profile_id else None
-    anime = BaseContent.objects.filter(content_type='anime').order_by('-release_year')
+    if not profile_id:
+        return redirect('login')
+    
+    try:
+        profile = Profile.objects.get(id=profile_id)
+    except Profile.DoesNotExist:
+        return redirect('login')
+    
+    # Get user's watchlist for anime only
+    watchlist_items = Watchlist.objects.filter(
+        profile=profile,
+        content__content_type='anime'
+    ).select_related('content').order_by('-added_on')
+    
     return render(request, 'core/list_page.html', {
-        'items': anime,
+        'items': [item.content for item in watchlist_items],
         'type': 'Anime',
         'profile': profile,
+        'is_watchlist': True,
     })
 
 def manga_list(request):
     profile_id = request.session.get('profile_id')
-    profile = Profile.objects.get(id=profile_id) if profile_id else None
-    manga = BaseContent.objects.filter(content_type='manga').order_by('-release_year')
+    if not profile_id:
+        return redirect('login')
+    
+    try:
+        profile = Profile.objects.get(id=profile_id)
+    except Profile.DoesNotExist:
+        return redirect('login')
+    
+    # Get user's watchlist for manga only
+    watchlist_items = Watchlist.objects.filter(
+        profile=profile,
+        content__content_type='manga'
+    ).select_related('content').order_by('-added_on')
+    
     return render(request, 'core/list_page.html', {
-        'items': manga,
+        'items': [item.content for item in watchlist_items],
         'type': 'Manga',
         'profile': profile,
+        'is_watchlist': True,
     })
 
 def comic_list(request):
     profile_id = request.session.get('profile_id')
-    profile = Profile.objects.get(id=profile_id) if profile_id else None
-    comics = BaseContent.objects.filter(content_type='comic').order_by('-release_year')
+    if not profile_id:
+        return redirect('login')
+    
+    try:
+        profile = Profile.objects.get(id=profile_id)
+    except Profile.DoesNotExist:
+        return redirect('login')
+    
+    # Get user's watchlist for comics only
+    watchlist_items = Watchlist.objects.filter(
+        profile=profile,
+        content__content_type='comic'
+    ).select_related('content').order_by('-added_on')
+    
     return render(request, 'core/list_page.html', {
-        'items': comics,
+        'items': [item.content for item in watchlist_items],
         'type': 'Comic',
         'profile': profile,
+        'is_watchlist': True,
     })
 
 def content_detail(request, pk):
     content = get_object_or_404(BaseContent, pk=pk)
-    related_entries = ContentRelation.objects.filter(from_content=content).select_related('to_content')
+    tmdb_data = None
 
-    # Fetch related data
+    # Fetch from TMDb for movies, series, animated shows
+    if content.content_type in ['movie', 'series', 'animatedshow'] and content.tmdb_id:
+        tmdb_type = (
+            'movie' if content.content_type == 'movie'
+            else 'tv'  # TMDb uses 'tv' for both series and animated shows
+        )
+        api_key = settings.TMDB_API_KEY
+        url = f'https://api.themoviedb.org/3/{tmdb_type}/{content.tmdb_id}?api_key={api_key}&language=en-US'
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            tmdb_data = resp.json()
+
+    related_entries = ContentRelation.objects.filter(from_content=content).select_related('to_content')
     characters = content.characters.all().prefetch_related('voice_actors')
     staff = content.staff.all()
     themes = content.themes.all()
 
     return render(request, 'core/content_detail.html', {
         'content': content,
+        'tmdb_data': tmdb_data,
         'related_entries': related_entries,
         'characters': characters,
         'staff': staff,
         'themes': themes,
     })
-
-def get_carousels(content_type):
-    now = timezone.now()
-    this_year = now.year
-    last_month = now - timedelta(days=30)
-    last_20_years = now.year - 20
-
-    # Trending: High-rated content from the last 30 days
-    trending = BaseContent.objects.filter(
-        content_type=content_type,
-        created_at__gte=last_month
-    ).order_by('-rating')[:12]
-
-    # What's Popular: Highest-rated content from the last 20 years
-    popular = BaseContent.objects.filter(
-        content_type=content_type,
-        release_year__gte=last_20_years
-    ).order_by('-rating')[:12]
-
-    # Latest: Recently added to the database
-    latest = BaseContent.objects.filter(
-        content_type=content_type
-    ).order_by('-created_at')[:12]
-
-    # Coming Soon: Content releasing in the future
-    coming_soon = BaseContent.objects.filter(
-        content_type=content_type,
-        release_year__gt=this_year
-    ).order_by('release_year')[:12]
-
-    return trending, popular, latest, coming_soon
 
 def movies_showcase(request):
     TMDB_API_KEY = getattr(settings, 'TMDB_API_KEY', None)
@@ -463,7 +520,7 @@ def series_showcase(request):
     trending, popular, latest, coming_soon = [], [], [], []
     if TMDB_API_KEY:
         try:
-            # Trending TV
+            # Trending TV - Use dedicated trending endpoint and exclude animated/talk shows
             trending_url = f'https://api.themoviedb.org/3/trending/tv/week?api_key={TMDB_API_KEY}'
             trending_resp = requests.get(trending_url)
             trending = [
@@ -473,10 +530,12 @@ def series_showcase(request):
                     'release_year': s.get('first_air_date', '')[:4],
                     'rating': s.get('vote_average'),
                     'pk': s.get('id'),
-                } for s in trending_resp.json().get('results', [])[:12]
-            ]
-            # Popular TV
-            popular_url = f'https://api.themoviedb.org/3/tv/popular?api_key={TMDB_API_KEY}'
+                } for s in trending_resp.json().get('results', [])
+                if 16 not in s.get('genre_ids', []) and 10767 not in s.get('genre_ids', [])
+            ][:12]
+            
+            # Popular TV - Exclude animated content (16) and talk shows (10767)
+            popular_url = f'https://api.themoviedb.org/3/discover/tv?api_key={TMDB_API_KEY}&sort_by=popularity.desc&without_genres=16,10767'
             popular_resp = requests.get(popular_url)
             popular = [
                 {
@@ -485,10 +544,13 @@ def series_showcase(request):
                     'release_year': s.get('first_air_date', '')[:4],
                     'rating': s.get('vote_average'),
                     'pk': s.get('id'),
-                } for s in popular_resp.json().get('results', [])[:12]
-            ]
-            # Latest TV (airing today)
-            latest_url = f'https://api.themoviedb.org/3/tv/airing_today?api_key={TMDB_API_KEY}'
+                } for s in popular_resp.json().get('results', []) 
+                if 'JP' not in s.get('origin_country', [])  # Exclude Japanese content
+            ][:12]
+            
+            # Latest TV (airing today or already aired) - Exclude animated and talk shows
+            today = datetime.now().strftime('%Y-%m-%d')
+            latest_url = f'https://api.themoviedb.org/3/discover/tv?api_key={TMDB_API_KEY}&sort_by=first_air_date.desc&without_genres=16,10767&first_air_date.lte={today}'
             latest_resp = requests.get(latest_url)
             latest = [
                 {
@@ -497,17 +559,19 @@ def series_showcase(request):
                     'release_year': s.get('first_air_date', '')[:4],
                     'rating': s.get('vote_average'),
                     'pk': s.get('id'),
-                } for s in latest_resp.json().get('results', [])[:12]
-            ]
-            # Coming Soon TV (upcoming, not yet aired)
-            from datetime import datetime, timedelta
-            today = datetime.now().strftime('%Y-%m-%d')
+                } for s in latest_resp.json().get('results', []) 
+                if 'JP' not in s.get('origin_country', [])  # Exclude Japanese content
+            ][:12]
+            
+            # Coming Soon TV (upcoming, not yet aired) - Exclude animated and talk shows
+            tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
             future_date = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d')
             coming_soon_url = (
                 f'https://api.themoviedb.org/3/discover/tv?api_key={TMDB_API_KEY}'
                 f'&language=en-US&sort_by=popularity.desc'
-                f'&first_air_date.gte={today}&first_air_date.lte={future_date}'
-                f'&with_type=2|3|4|5'  # Excludes talk shows, news, etc.
+                f'&first_air_date.gte={tomorrow}&first_air_date.lte={future_date}'
+                f'&without_genres=16,10767'  # Exclude animated and talk shows
+                f'&with_type=2|3|4|5'  # Excludes some unwanted types
             )
             coming_soon_resp = requests.get(coming_soon_url)
             coming_soon = [
@@ -517,8 +581,9 @@ def series_showcase(request):
                     'release_year': s.get('first_air_date', '')[:4],
                     'rating': s.get('vote_average'),
                     'pk': s.get('id'),
-                } for s in coming_soon_resp.json().get('results', [])[:12]
-            ]
+                } for s in coming_soon_resp.json().get('results', []) 
+                if 'JP' not in s.get('origin_country', [])  # Exclude Japanese content
+            ][:12]
         except Exception:
             trending, popular, latest, coming_soon = [], [], [], []
     return render(request, 'core/content_showcase.html', {
@@ -578,7 +643,6 @@ def anime_showcase(request):
         ]
         # 2. Fallback: supplement with current season if not enough
         if len(latest) < 12:
-            from datetime import datetime
             def get_current_season():
                 month = datetime.now().month
                 if month in [12, 1, 2]:
@@ -894,4 +958,57 @@ def manga_showcase(request):
         'popular': popular,
         'latest': latest,
         'coming_soon': coming_soon,
+    })
+
+def tmdb_movie_detail(request, tmdb_id):
+    api_key = settings.TMDB_API_KEY
+    url = f'https://api.themoviedb.org/3/movie/{tmdb_id}?api_key={api_key}&language=en-US'
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        raise Http404("Movie not found in TMDb")
+    tmdb_data = resp.json()
+
+    # Fetch credits (cast and crew)
+    credits_url = f'https://api.themoviedb.org/3/movie/{tmdb_id}/credits?api_key={api_key}'
+    credits_resp = requests.get(credits_url)
+    credits = credits_resp.json() if credits_resp.status_code == 200 else {}
+    cast = credits.get('cast', [])
+    crew = credits.get('crew', [])
+
+    # Fetch videos
+    videos_url = f'https://api.themoviedb.org/3/movie/{tmdb_id}/videos?api_key={api_key}'
+    videos_resp = requests.get(videos_url)
+    videos = videos_resp.json().get('results', []) if videos_resp.status_code == 200 else []
+
+    return render(request, 'core/content_detail.html', {
+        'content': None,
+        'tmdb_data': tmdb_data,
+        'related_entries': [],
+        'characters': cast,
+        'staff': crew,
+        'themes': [],
+        'videos': videos,
+    })
+
+def tmdb_series_detail(request, tmdb_id):
+    api_key = settings.TMDB_API_KEY
+    url = f'https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={api_key}&language=en-US'
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        raise Http404("Series not found in TMDb")
+    tmdb_data = resp.json()
+
+    # Fetch videos
+    videos_url = f'https://api.themoviedb.org/3/tv/{tmdb_id}/videos?api_key={api_key}'
+    videos_resp = requests.get(videos_url)
+    videos = videos_resp.json().get('results', []) if videos_resp.status_code == 200 else []
+
+    return render(request, 'core/content_detail.html', {
+        'content': None,
+        'tmdb_data': tmdb_data,
+        'related_entries': [],
+        'characters': [],
+        'staff': [],
+        'themes': [],
+        'videos': videos,
     })

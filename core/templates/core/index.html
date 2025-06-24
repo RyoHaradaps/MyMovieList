@@ -1,8 +1,8 @@
-{% extends "core/base.html" %}
+  {% extends "core/base.html" %}
 
 {% block title %}Welcome to MyMovieList{% endblock %}
 
-{% block content %}
+  {% block content %}
 <div class="text-center mb-8">
     <h1 class="text-4xl font-bold mb-2">Welcome to MyMovieList</h1>
     <p class="text-lg text-gray-400 mb-4">Track your movies, series, anime, and comics — all in one place!</p>
@@ -23,7 +23,9 @@
                 <a href="{% url 'content_detail' item.pk %}">
                     <div class="relative">
                         {% if item.poster_url %}
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                        <img src="{{ item.poster_url }}"
+                            alt="{% if item.title %}{{ item.title }}{% elif item.name %}{{ item.name }}{% else %}Untitled{% endif %}"
+                            class="w-full h-64 object-cover">
                         {% endif %}
                         <div
                             class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
@@ -38,7 +40,10 @@
                         {% endif %}
                     </div>
                     <div class="p-3">
-                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}
+                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">
+                            {% if item.title %}{{ item.title }}
+                            {% elif item.name %}{{ item.name }}
+                            {% else %}Untitled{% endif %}
                         </div>
                     </div>
                 </a>
@@ -66,7 +71,9 @@
                 <a href="{% url 'content_detail' item.pk %}">
                     <div class="relative">
                         {% if item.poster_url %}
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                        <img src="{{ item.poster_url }}"
+                            alt="{% if item.title %}{{ item.title }}{% elif item.name %}{{ item.name }}{% else %}Untitled{% endif %}"
+                            class="w-full h-64 object-cover">
                         {% endif %}
                         <div
                             class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
@@ -81,7 +88,10 @@
                         {% endif %}
                     </div>
                     <div class="p-3">
-                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}
+                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">
+                            {% if item.title %}{{ item.title }}
+                            {% elif item.name %}{{ item.name }}
+                            {% else %}Untitled{% endif %}
                         </div>
                     </div>
                 </a>
@@ -109,7 +119,9 @@
                 <a href="{% url 'content_detail' item.pk %}">
                     <div class="relative">
                         {% if item.poster_url %}
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                        <img src="{{ item.poster_url }}"
+                            alt="{% if item.title %}{{ item.title }}{% elif item.name %}{{ item.name }}{% else %}Untitled{% endif %}"
+                            class="w-full h-64 object-cover">
                         {% endif %}
                         <div
                             class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
@@ -124,13 +136,16 @@
                         {% endif %}
                     </div>
                     <div class="p-3">
-                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}
+                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">
+                            {% if item.title %}{{ item.title }}
+                            {% elif item.name %}{{ item.name }}
+                            {% else %}Untitled{% endif %}
                         </div>
                     </div>
                 </a>
             </div>
             {% endfor %}
-        </div>
+      </div>
         <button id="carousel-animated-right"
             class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
             onclick="scrollCarousel('carousel-animated', 1)" aria-label="Scroll right">
@@ -152,7 +167,9 @@
                 <a href="{% url 'content_detail' item.pk %}">
                     <div class="relative">
                         {% if item.poster_url %}
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+                        <img src="{{ item.poster_url }}"
+                            alt="{% if item.title %}{{ item.title }}{% elif item.name %}{{ item.name }}{% else %}Untitled{% endif %}"
+                            class="w-full h-64 object-cover">
                         {% endif %}
                         <div
                             class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
@@ -167,13 +184,16 @@
                         {% endif %}
                     </div>
                     <div class="p-3">
-                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}
+                        <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">
+                            {% if item.title %}{{ item.title }}
+                            {% elif item.name %}{{ item.name }}
+                            {% else %}Untitled{% endif %}
                         </div>
                     </div>
                 </a>
             </div>
-            {% endfor %}
-        </div>
+    {% endfor %}
+  </div>
         <button id="carousel-comics-right"
             class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg flex group-hover:flex transition-opacity duration-200 hidden"
             onclick="scrollCarousel('carousel-comics', 1)" aria-label="Scroll right">
@@ -247,4 +267,4 @@
         carouselIds.forEach(enableMouseWheelHorizontalScroll);
     });
 </script>
-{% endblock %}
+  {% endblock %}

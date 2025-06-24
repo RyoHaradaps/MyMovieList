@@ -42,6 +42,7 @@ class BaseContent(models.Model):
     rating = models.FloatField(default=0)
     release_year = models.IntegerField()
     content_type = models.CharField(max_length=20, choices=CONTENT_TYPES)
+    tmdb_id = models.IntegerField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
