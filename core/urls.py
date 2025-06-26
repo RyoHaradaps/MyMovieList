@@ -19,6 +19,7 @@ urlpatterns = [
     path('manga/list/', views.manga_list, name='manga_list'),
     path('comics/list/', views.comic_list, name='comic_list'),
     path('content/<int:pk>/', views.content_detail, name='content_detail'),
+    path('content/<int:pk>/track/', views.update_tracking, name='update_tracking'),
     path('movies/', views.movies_showcase, name='movies_showcase'),
     path('series/', views.series_showcase, name='series_showcase'),
     path('anime/', views.anime_showcase, name='anime_showcase'),
@@ -27,4 +28,5 @@ urlpatterns = [
     path('animated/', views.animated_showcase, name='animated_showcase'),
     path('tmdb/movie/<int:tmdb_id>/', views.tmdb_movie_detail, name='tmdb_movie_detail'),
     path('tmdb/series/<int:tmdb_id>/', views.tmdb_series_detail, name='tmdb_series_detail'),
+    path('content/import_tmdb/', views.import_tmdb_content, name='import_tmdb_content'),
 ]

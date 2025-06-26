@@ -10,6 +10,7 @@ from django.conf import settings
 from .services import get_latest_animated_movies, get_upcoming_animated_movies
 from django.http import Http404
 from collections import defaultdict
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 def index(request):
@@ -445,6 +446,34 @@ def content_detail(request, pk):
     staff = content.staff.all()
     themes = content.themes.all()
 
+    # Fetch user's Watchlist entry if logged in
+    watchlist_entry = None
+    profile_id = request.session.get('profile_id')
+    if profile_id:
+        try:
+            profile = Profile.objects.get(pk=profile_id)
+            watchlist_entry = Watchlist.objects.filter(profile=profile, content=content).first()
+        except Profile.DoesNotExist:
+            pass
+
+    status_choices = Watchlist._meta.get_field('status').choices
+    score_choices = [str(i) for i in range(10, 0, -1)]
+    score_labels = [  # MAL-style
+        (10, "Masterpiece"),
+        (9, "Great"),
+        (8, "Very Good"),
+        (7, "Good"),
+        (6, "Fine"),
+        (5, "Average"),
+        (4, "Bad"),
+        (3, "Very Bad"),
+        (2, "Horrible"),
+        (1, "Appalling"),
+    ]
+
+    print("DEBUG: content =", content)
+    print("DEBUG: tmdb_data =", tmdb_data)
+
     return render(request, 'core/content_detail.html', {
         'content': content,
         'tmdb_data': tmdb_data,
@@ -452,6 +481,10 @@ def content_detail(request, pk):
         'characters': characters,
         'staff': staff,
         'themes': themes,
+        'watchlist_entry': watchlist_entry,
+        'status_choices': status_choices,
+        'score_choices': score_choices,
+        'score_labels': score_labels,
     })
 
 def movies_showcase(request):
@@ -1029,8 +1062,23 @@ def tmdb_series_detail(request, tmdb_id):
     # Fetch seasons and episodes
     seasons = fetch_tmdb_seasons_and_episodes(tmdb_id)
 
+    # Content tracking context
+    content = BaseContent.objects.filter(tmdb_id=tmdb_id, content_type='series').first()
+    watchlist_entry = None
+    status_choices = []
+    score_choices = []
+    profile_id = request.session.get('profile_id')
+    if content and profile_id:
+        try:
+            profile = Profile.objects.get(pk=profile_id)
+            watchlist_entry = Watchlist.objects.filter(profile=profile, content=content).first()
+        except Profile.DoesNotExist:
+            pass
+        status_choices = Watchlist._meta.get_field('status').choices
+        score_choices = [str(i) for i in range(10, 0, -1)]
+
     return render(request, 'core/content_detail.html', {
-        'content': None,
+        'content': content,
         'tmdb_data': tmdb_data,
         'related_entries': [],
         'characters': cast,
@@ -1038,6 +1086,9 @@ def tmdb_series_detail(request, tmdb_id):
         'themes': [],
         'videos': videos,
         'seasons': seasons,
+        'watchlist_entry': watchlist_entry,
+        'status_choices': status_choices,
+        'score_choices': score_choices,
     })
 
 def tmdb_movie_detail(request, tmdb_id):
@@ -1061,8 +1112,26 @@ def tmdb_movie_detail(request, tmdb_id):
     videos_resp = requests.get(videos_url)
     videos = videos_resp.json().get('results', []) if videos_resp.status_code == 200 else []
 
+    # Content tracking context
+    content = BaseContent.objects.filter(tmdb_id=tmdb_id, content_type='movie').first()
+    watchlist_entry = None
+    status_choices = []
+    score_choices = []
+    profile_id = request.session.get('profile_id')
+    if content and profile_id:
+        try:
+            profile = Profile.objects.get(pk=profile_id)
+            watchlist_entry = Watchlist.objects.filter(profile=profile, content=content).first()
+        except Profile.DoesNotExist:
+            pass
+        status_choices = Watchlist._meta.get_field('status').choices
+        score_choices = [str(i) for i in range(10, 0, -1)]
+
+    print("DEBUG: content =", content)
+    print("DEBUG: tmdb_data =", tmdb_data)
+
     return render(request, 'core/content_detail.html', {
-        'content': None,
+        'content': content,
         'tmdb_data': tmdb_data,
         'related_entries': [],
         'characters': cast,
@@ -1070,4 +1139,98 @@ def tmdb_movie_detail(request, tmdb_id):
         'themes': [],
         'videos': videos,
         'seasons': [],  # Movies don't have seasons
+        'watchlist_entry': watchlist_entry,
+        'status_choices': status_choices,
+        'score_choices': score_choices,
     })
+
+def update_tracking(request, pk):
+    if not request.user.is_authenticated and 'profile_id' not in request.session:
+        return redirect('login')
+    content = get_object_or_404(BaseContent, pk=pk)
+    # Get profile from session (your app uses session, not request.user)
+    profile_id = request.session.get('profile_id')
+    if not profile_id:
+        return redirect('login')
+    profile = get_object_or_404(Profile, pk=profile_id)
+
+    # Get or create Watchlist entry
+    watchlist, created = Watchlist.objects.get_or_create(profile=profile, content=content)
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        progress = request.POST.get('progress')
+        score = request.POST.get('score')
+        # Validate and update fields
+        if status in dict(Watchlist._meta.get_field('status').choices):
+            watchlist.status = status
+        try:
+            watchlist.progress = int(progress)
+        except (TypeError, ValueError):
+            pass
+        try:
+            watchlist.score = int(score) if score else None
+        except (TypeError, ValueError):
+            pass
+        watchlist.save()
+        from django.contrib import messages
+        messages.success(request, 'Tracking updated!')
+    return redirect('content_detail', pk=content.pk)
+
+@require_POST
+def import_tmdb_content(request):
+    tmdb_id = request.POST.get('tmdb_id')
+    tmdb_type = request.POST.get('tmdb_type')
+    if not tmdb_id or not tmdb_type:
+        messages.error(request, 'Invalid TMDb import request.')
+        return redirect('index')
+
+    # Check if already exists
+    content = BaseContent.objects.filter(tmdb_id=tmdb_id, content_type=tmdb_type).first()
+    profile_id = request.session.get('profile_id')
+    if content:
+        # Also ensure a Watchlist entry exists for this user
+        if profile_id:
+            profile = Profile.objects.get(pk=profile_id)
+            Watchlist.objects.get_or_create(profile=profile, content=content, defaults={'status': 'plan'})
+        return redirect('content_detail', pk=content.pk)
+
+    api_key = settings.TMDB_API_KEY
+    if tmdb_type == 'movie':
+        url = f'https://api.themoviedb.org/3/movie/{tmdb_id}?api_key={api_key}&language=en-US'
+    else:
+        url = f'https://api.themoviedb.org/3/tv/{tmdb_id}?api_key={api_key}&language=en-US'
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        messages.error(request, 'Could not fetch data from TMDb.')
+        return redirect('index')
+    data = resp.json()
+
+    # Create BaseContent
+    title = data.get('title') or data.get('name') or 'Untitled'
+    description = data.get('overview', '')
+    poster_path = data.get('poster_path')
+    poster_url = f'https://image.tmdb.org/t/p/w500{poster_path}' if poster_path else ''
+    release_year = (data.get('release_date') or data.get('first_air_date') or '')[:4]
+    try:
+        release_year = int(release_year)
+    except Exception:
+        release_year = 0
+    rating = data.get('vote_average', 0)
+
+    content = BaseContent.objects.create(
+        title=title,
+        description=description,
+        poster_url=poster_url,
+        release_year=release_year,
+        rating=rating,
+        content_type=tmdb_type,
+        tmdb_id=tmdb_id,
+    )
+
+    # Create Watchlist entry for this user
+    if profile_id:
+        profile = Profile.objects.get(pk=profile_id)
+        Watchlist.objects.get_or_create(profile=profile, content=content, defaults={'status': 'plan'})
+
+    messages.success(request, f'Imported "{title}" to your library and added to your list!')
+    return redirect('content_detail', pk=content.pk)

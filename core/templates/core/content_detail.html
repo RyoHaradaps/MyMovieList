@@ -173,6 +173,69 @@
                     {% endif %}
                 </p>
             </div>
+            {% if not content and tmdb_data and tmdb_data.id %}
+            <form method="post" action="{% url 'import_tmdb_content' %}" class="mb-6">
+                {% csrf_token %}
+                <input type="hidden" name="tmdb_id" value="{{ tmdb_data.id }}">
+                <input type="hidden" name="tmdb_type" value="{% if tmdb_data.title %}movie{% else %}series{% endif %}">
+                <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded shadow flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Add to My List (import this title to your library to enable
+                    tracking)
+                </button>
+            </form>
+            {% endif %}
+            {% if user.is_authenticated and content %}
+            <form method="post" action="{% url 'update_tracking' content.pk %}">
+                {% csrf_token %}
+                <div class="bg-gray-900 text-white p-4 rounded-md space-y-3 w-72 text-sm mx-auto">
+                    <!-- Status -->
+                    <div class="flex items-center">
+                        <label for="status" class="w-24 text-gray-300">Status:</label>
+                        <select id="status" name="status" class="bg-gray-700 text-white rounded px-2 py-1 flex-1">
+                            {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if watchlist_entry and watchlist_entry.status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Episodes Seen -->
+                    <div class="flex items-center">
+                        <label for="progress" class="w-24 text-gray-300">Eps Seen:</label>
+                        <div class="flex items-center space-x-1 flex-1">
+                            <input id="progress" name="progress" type="number" min="0"
+                                value="{% if watchlist_entry %}{{ watchlist_entry.progress }}{% else %}0{% endif %}"
+                                class="w-16 bg-gray-700 text-white px-2 py-1 rounded">
+                            <span>/ {{ content.episodes|default:'?' }}</span>
+                            <button type="button" class="text-blue-400 hover:text-blue-600"
+                                onclick="document.getElementById('progress').stepUp();">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Score -->
+                    <div class="flex items-center">
+                        <label for="score" class="w-24 text-gray-300">Your Score:</label>
+                        <select id="score" name="score" class="bg-gray-700 text-white rounded px-2 py-1 flex-1">
+                            <option value="">-</option>
+                            {% for i, label in score_labels %}
+                            <option value="{{ i }}" {% if watchlist_entry and watchlist_entry.score == i %}selected{% endif %}>({{ i }}) {{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex items-center gap-2">
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-semibold">
+                            Update
+                        </button>
+                        <a href="#edit-details" class="text-xs text-gray-300 hover:underline">Edit Details</a>
+                    </div>
+                </div>
+            </form>
+            {% endif %}
         </div>
 
         <!-- Characters Tab -->
