@@ -1,0 +1,79 @@
+digraph ERD {
+  node [fontname="Arial"];
+  // Entities
+  user [shape=rectangle, label="User"];
+  profile [shape=rectangle, label="Profile"];
+  movie [shape=rectangle, label="Movie"];
+  tvshow [shape=rectangle, label="TVShow"];
+  animated [shape=rectangle, label="Animated"];
+  comic [shape=rectangle, label="Comic"];
+  genre [shape=rectangle, label="Genre"];
+  rating [shape=rectangle, label="Rating"];
+  review [shape=rectangle, label="Review"];
+
+  // Attributes (ovals)
+  user_id [shape=ellipse, label="user_id"];
+  username [shape=ellipse, label="username"];
+  email [shape=ellipse, label="email"];
+  password [shape=ellipse, label="password"];
+  profile_id [shape=ellipse, label="profile_id"];
+  avatar [shape=ellipse, label="avatar"];
+  movie_id [shape=ellipse, label="movie_id"];
+  title [shape=ellipse, label="title"];
+  release_date [shape=ellipse, label="release_date"];
+  genre_name [shape=ellipse, label="genre_name"];
+  rating_value [shape=ellipse, label="rating_value"];
+  review_text [shape=ellipse, label="review_text"];
+
+  // Relationships (diamonds)
+  has_profile [shape=diamond, label="has"];
+  rates [shape=diamond, label="rates"];
+  reviews [shape=diamond, label="reviews"];
+  belongs_to [shape=diamond, label="belongs_to"];
+  has_genre [shape=diamond, label="has_genre"];
+
+  // Connect attributes to entities
+  user -> user_id;
+  user -> username;
+  user -> email;
+  user -> password;
+  profile -> profile_id;
+  profile -> avatar;
+  movie -> movie_id;
+  movie -> title;
+  movie -> release_date;
+  genre -> genre_name;
+  rating -> rating_value;
+  review -> review_text;
+
+  // Connect entities via relationships
+  user -> has_profile;
+  has_profile -> profile;
+
+  user -> rates;
+  rates -> rating;
+  rating -> movie;
+
+  user -> reviews;
+  reviews -> review;
+  review -> movie;
+
+  movie -> has_genre;
+  has_genre -> genre;
+
+  // TVShow, Animated, Comic as similar to Movie
+  tvshow -> title;
+  tvshow -> release_date;
+  tvshow -> has_genre;
+  has_genre -> genre;
+
+  animated -> title;
+  animated -> release_date;
+  animated -> has_genre;
+  has_genre -> genre;
+
+  comic -> title;
+  comic -> release_date;
+  comic -> has_genre;
+  has_genre -> genre;
+} 

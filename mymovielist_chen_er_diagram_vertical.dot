@@ -1,0 +1,195 @@
+digraph ERD {
+  node [fontname="Arial"];
+  rankdir=TB;
+  ranksep=2.0;
+  nodesep=0.7;
+
+  // Profile
+  Profile [shape=rectangle, label="Profile"];
+  profile_id [shape=ellipse, label="id (PK)"];
+  username [shape=ellipse, label="username"];
+  email [shape=ellipse, label="email"];
+  password [shape=ellipse, label="password"];
+  bio [shape=ellipse, label="bio"];
+  join_date [shape=ellipse, label="join_date"];
+  gender [shape=ellipse, label="gender"];
+  avatar [shape=ellipse, label="avatar"];
+  birthday [shape=ellipse, label="birthday"];
+  Profile -> profile_id [dir=none];
+  Profile -> username [dir=none];
+  Profile -> email [dir=none];
+  Profile -> password [dir=none];
+  Profile -> bio [dir=none];
+  Profile -> join_date [dir=none];
+  Profile -> gender [dir=none];
+  Profile -> avatar [dir=none];
+  Profile -> birthday [dir=none];
+
+  // Profile Relationships
+  prof_watchlist [shape=diamond, label="has_watchlist"];
+  prof_rating [shape=diamond, label="has_rating"];
+  prof_review [shape=diamond, label="has_review"];
+  Profile -> prof_watchlist [dir=none];
+  Profile -> prof_rating [dir=none];
+  Profile -> prof_review [dir=none];
+
+  // Watchlist
+  Watchlist [shape=rectangle, label="Watchlist"];
+  watchlist_id [shape=ellipse, label="id (PK)"];
+  wl_profile_id [shape=ellipse, label="profile_id (FK)"];
+  wl_content_id [shape=ellipse, label="content_id (FK)"];
+  added_date [shape=ellipse, label="added_date"];
+  notes [shape=ellipse, label="notes"];
+  priority [shape=ellipse, label="priority"];
+  status [shape=ellipse, label="status"];
+  Watchlist -> watchlist_id [dir=none];
+  Watchlist -> wl_profile_id [dir=none];
+  Watchlist -> wl_content_id [dir=none];
+  Watchlist -> added_date [dir=none];
+  Watchlist -> notes [dir=none];
+  Watchlist -> priority [dir=none];
+  Watchlist -> status [dir=none];
+  prof_watchlist -> Watchlist [dir=none];
+
+  // Rating
+  Rating [shape=rectangle, label="Rating"];
+  rating_id [shape=ellipse, label="id (PK)"];
+  r_profile_id [shape=ellipse, label="profile_id (FK)"];
+  r_content_id [shape=ellipse, label="content_id (FK)"];
+  rating_value [shape=ellipse, label="rating_value"];
+  review_text [shape=ellipse, label="review_text"];
+  review_date [shape=ellipse, label="review_date"];
+  helpful_votes [shape=ellipse, label="helpful_votes"];
+  Rating -> rating_id [dir=none];
+  Rating -> r_profile_id [dir=none];
+  Rating -> r_content_id [dir=none];
+  Rating -> rating_value [dir=none];
+  Rating -> review_text [dir=none];
+  Rating -> review_date [dir=none];
+  Rating -> helpful_votes [dir=none];
+  prof_rating -> Rating [dir=none];
+  prof_review -> Rating [dir=none];
+
+  // BaseContent
+  BaseContent [shape=rectangle, label="BaseContent"];
+  content_id [shape=ellipse, label="id (PK)"];
+  title [shape=ellipse, label="title"];
+  alt_title [shape=ellipse, label="alt_title"];
+  description [shape=ellipse, label="description"];
+  release_year [shape=ellipse, label="release_year"];
+  content_type [shape=ellipse, label="content_type"];
+  poster_url [shape=ellipse, label="poster_url"];
+  BaseContent -> content_id [dir=none];
+  BaseContent -> title [dir=none];
+  BaseContent -> alt_title [dir=none];
+  BaseContent -> description [dir=none];
+  BaseContent -> release_year [dir=none];
+  BaseContent -> content_type [dir=none];
+  BaseContent -> poster_url [dir=none];
+
+  // BaseContent Relationships
+  content_watchlist [shape=diamond, label="in_watchlist"];
+  content_rating [shape=diamond, label="has_rating"];
+  content_genre [shape=diamond, label="has_genre"];
+  content_character [shape=diamond, label="has_character"];
+  content_staff [shape=diamond, label="has_staff"];
+  content_movie [shape=diamond, label="is_movie"];
+  content_series [shape=diamond, label="is_series"];
+  content_animated [shape=diamond, label="is_animated"];
+  content_comic [shape=diamond, label="is_comic"];
+  BaseContent -> content_watchlist [dir=none];
+  BaseContent -> content_rating [dir=none];
+  BaseContent -> content_genre [dir=none];
+  BaseContent -> content_character [dir=none];
+  BaseContent -> content_staff [dir=none];
+  BaseContent -> content_movie [dir=none];
+  BaseContent -> content_series [dir=none];
+  BaseContent -> content_animated [dir=none];
+  BaseContent -> content_comic [dir=none];
+
+  // Watchlist/Rating to BaseContent
+  content_watchlist -> Watchlist [dir=none];
+  content_rating -> Rating [dir=none];
+
+  // Genre
+  Genre [shape=rectangle, label="Genre"];
+  genre_id [shape=ellipse, label="id (PK)"];
+  genre_name [shape=ellipse, label="name"];
+  genre_desc [shape=ellipse, label="description"];
+  genre_cat [shape=ellipse, label="category"];
+  Genre -> genre_id [dir=none];
+  Genre -> genre_name [dir=none];
+  Genre -> genre_desc [dir=none];
+  Genre -> genre_cat [dir=none];
+  content_genre -> Genre [dir=none];
+
+  // Character
+  Character [shape=rectangle, label="Character"];
+  character_id [shape=ellipse, label="id (PK)"];
+  char_name [shape=ellipse, label="name"];
+  char_desc [shape=ellipse, label="description"];
+  char_role [shape=ellipse, label="role"];
+  actor_name [shape=ellipse, label="actor_name"];
+  char_image [shape=ellipse, label="image_url"];
+  char_content_id [shape=ellipse, label="content_id (FK)"];
+  Character -> character_id [dir=none];
+  Character -> char_name [dir=none];
+  Character -> char_desc [dir=none];
+  Character -> char_role [dir=none];
+  Character -> actor_name [dir=none];
+  Character -> char_image [dir=none];
+  Character -> char_content_id [dir=none];
+  content_character -> Character [dir=none];
+
+  // Staff
+  Staff [shape=rectangle, label="Staff"];
+  staff_id [shape=ellipse, label="id (PK)"];
+  staff_name [shape=ellipse, label="name"];
+  staff_role [shape=ellipse, label="role"];
+  biography [shape=ellipse, label="biography"];
+  birth_date [shape=ellipse, label="birth_date"];
+  staff_image [shape=ellipse, label="image_url"];
+  staff_content_id [shape=ellipse, label="content_id (FK)"];
+  Staff -> staff_id [dir=none];
+  Staff -> staff_name [dir=none];
+  Staff -> staff_role [dir=none];
+  Staff -> biography [dir=none];
+  Staff -> birth_date [dir=none];
+  Staff -> staff_image [dir=none];
+  Staff -> staff_content_id [dir=none];
+  content_staff -> Staff [dir=none];
+
+  // Movie
+  Movie [shape=rectangle, label="Movie"];
+  movie_ptr [shape=ellipse, label="content_ptr_id (PK, FK)"];
+  Movie -> movie_ptr [dir=none];
+  content_movie -> Movie [dir=none];
+
+  // Series
+  Series [shape=rectangle, label="Series"];
+  Series -> movie_ptr [dir=none];
+  content_series -> Series [dir=none];
+
+  // AnimatedShow
+  AnimatedShow [shape=rectangle, label="AnimatedShow"];
+  AnimatedShow -> movie_ptr [dir=none];
+  content_animated -> AnimatedShow [dir=none];
+
+  // Comic
+  Comic [shape=rectangle, label="Comic"];
+  Comic -> movie_ptr [dir=none];
+  content_comic -> Comic [dir=none];
+
+  // Force vertical stacking
+  { rank=min; Profile; }
+  { rank=same; Watchlist; }
+  { rank=same; Rating; }
+  { rank=same; BaseContent; }
+  { rank=same; Genre; }
+  { rank=same; Character; }
+  { rank=same; Staff; }
+  { rank=same; Movie; }
+  { rank=same; Series; }
+  { rank=same; AnimatedShow; }
+  { rank=same; Comic; }
+}
