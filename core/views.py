@@ -452,23 +452,14 @@ def content_detail(request, pk):
     if profile_id:
         try:
             profile = Profile.objects.get(pk=profile_id)
-            watchlist_entry = Watchlist.objects.filter(profile=profile, content=content).first()
+            watchlist_entry, created = Watchlist.objects.get_or_create(profile=profile, content=content)
         except Profile.DoesNotExist:
             pass
 
     status_choices = Watchlist._meta.get_field('status').choices
-    score_choices = [str(i) for i in range(10, 0, -1)]
-    score_labels = [  # MAL-style
-        (10, "Masterpiece"),
-        (9, "Great"),
-        (8, "Very Good"),
-        (7, "Good"),
-        (6, "Fine"),
-        (5, "Average"),
-        (4, "Bad"),
-        (3, "Very Bad"),
-        (2, "Horrible"),
-        (1, "Appalling"),
+    score_labels = [
+        (10, "Masterpiece"), (9, "Great"), (8, "Very Good"), (7, "Good"), (6, "Fine"),
+        (5, "Average"), (4, "Bad"), (3, "Very Bad"), (2, "Horrible"), (1, "Appalling"),
     ]
 
     print("DEBUG: content =", content)
@@ -483,7 +474,6 @@ def content_detail(request, pk):
         'themes': themes,
         'watchlist_entry': watchlist_entry,
         'status_choices': status_choices,
-        'score_choices': score_choices,
         'score_labels': score_labels,
     })
 
@@ -1066,16 +1056,19 @@ def tmdb_series_detail(request, tmdb_id):
     content = BaseContent.objects.filter(tmdb_id=tmdb_id, content_type='series').first()
     watchlist_entry = None
     status_choices = []
-    score_choices = []
+    score_labels = []
     profile_id = request.session.get('profile_id')
     if content and profile_id:
         try:
             profile = Profile.objects.get(pk=profile_id)
-            watchlist_entry = Watchlist.objects.filter(profile=profile, content=content).first()
+            watchlist_entry, created = Watchlist.objects.get_or_create(profile=profile, content=content)
         except Profile.DoesNotExist:
             pass
         status_choices = Watchlist._meta.get_field('status').choices
-        score_choices = [str(i) for i in range(10, 0, -1)]
+        score_labels = [
+            (10, "Masterpiece"), (9, "Great"), (8, "Very Good"), (7, "Good"), (6, "Fine"),
+            (5, "Average"), (4, "Bad"), (3, "Very Bad"), (2, "Horrible"), (1, "Appalling"),
+        ]
 
     return render(request, 'core/content_detail.html', {
         'content': content,
@@ -1088,7 +1081,7 @@ def tmdb_series_detail(request, tmdb_id):
         'seasons': seasons,
         'watchlist_entry': watchlist_entry,
         'status_choices': status_choices,
-        'score_choices': score_choices,
+        'score_labels': score_labels,
     })
 
 def tmdb_movie_detail(request, tmdb_id):
@@ -1116,16 +1109,19 @@ def tmdb_movie_detail(request, tmdb_id):
     content = BaseContent.objects.filter(tmdb_id=tmdb_id, content_type='movie').first()
     watchlist_entry = None
     status_choices = []
-    score_choices = []
+    score_labels = []
     profile_id = request.session.get('profile_id')
     if content and profile_id:
         try:
             profile = Profile.objects.get(pk=profile_id)
-            watchlist_entry = Watchlist.objects.filter(profile=profile, content=content).first()
+            watchlist_entry, created = Watchlist.objects.get_or_create(profile=profile, content=content)
         except Profile.DoesNotExist:
             pass
         status_choices = Watchlist._meta.get_field('status').choices
-        score_choices = [str(i) for i in range(10, 0, -1)]
+        score_labels = [
+            (10, "Masterpiece"), (9, "Great"), (8, "Very Good"), (7, "Good"), (6, "Fine"),
+            (5, "Average"), (4, "Bad"), (3, "Very Bad"), (2, "Horrible"), (1, "Appalling"),
+        ]
 
     print("DEBUG: content =", content)
     print("DEBUG: tmdb_data =", tmdb_data)
@@ -1141,7 +1137,7 @@ def tmdb_movie_detail(request, tmdb_id):
         'seasons': [],  # Movies don't have seasons
         'watchlist_entry': watchlist_entry,
         'status_choices': status_choices,
-        'score_choices': score_choices,
+        'score_labels': score_labels,
     })
 
 def update_tracking(request, pk):

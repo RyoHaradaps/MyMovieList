@@ -2,78 +2,110 @@
 {% load custom_tags %}
 {% block title %}
 {% if tmdb_data %}
-{% if tmdb_data.title %}
-{{ tmdb_data.title }}
-{% elif tmdb_data.name %}
-{{ tmdb_data.name }}
-{% endif %}
+  {% if tmdb_data.title %}
+    {{ tmdb_data.title }}
+  {% elif tmdb_data.name %}
+    {{ tmdb_data.name }}
+  {% endif %}
 {% else %}
-{{ content.title }}
+  {{ content.title }}
 {% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="flex flex-col md:flex-row gap-8 bg-gray-900 rounded-xl shadow-xl p-6">
-    <!-- Left: Poster & User Status -->
-    <div class="w-full md:w-1/4 flex flex-col items-center">
-        <img src="{% if tmdb_data and tmdb_data.poster_path %}https://image.tmdb.org/t/p/w500{{ tmdb_data.poster_path }}{% else %}{{ content.poster_url }}{% endif %}"
-            alt="{% if tmdb_data %}{% if tmdb_data.title %}{{ tmdb_data.title }}{% elif tmdb_data.name %}{{ tmdb_data.name }}{% else %}{{ content.title }}{% endif %}{% else %}{{ content.title }}{% endif %}"
-            class="rounded-lg shadow-2xl w-full mb-6 border-4 border-gray-800">
-        {% if user.is_authenticated %}
-        <div class="bg-gray-800 p-4 rounded-lg w-full mt-2 shadow-lg">
-            <h3 class="font-semibold mb-2 flex items-center"><i class="fa-solid fa-user-check mr-2"></i>Your Status</h3>
-            <!-- Example: Show user's status for this content (replace with real data if available) -->
-            <div class="mb-2 flex items-center gap-2">
-                <span class="bg-blue-700 px-2 py-1 rounded text-xs font-semibold">Watching</span>
-                <span class="bg-gray-700 px-2 py-1 rounded text-xs">Eps: 3 / {{ content.episodes }}</span>
-                <span class="bg-yellow-600 px-2 py-1 rounded text-xs flex items-center"><i
-                        class="fa-solid fa-star mr-1"></i>8</span>
+<div class="flex flex-col md:flex-row gap-2 bg-gray-900 rounded-xl shadow-xl p-6">
+
+  <!-- Left: Poster & User Status -->
+  <div class="w-full md:w-auto md:max-w-xs flex flex-col items-center">
+    <img src="{% if tmdb_data and tmdb_data.poster_path %}https://image.tmdb.org/t/p/w500{{ tmdb_data.poster_path }}{% else %}{{ content.poster_url }}{% endif %}"
+      alt="{% if tmdb_data %}
+              {% if tmdb_data.title %}{{ tmdb_data.title }}
+              {% elif tmdb_data.name %}{{ tmdb_data.name }}
+              {% else %}{{ content.title }}
+              {% endif %}
+            {% else %}{{ content.title }}{% endif %}"
+      class="rounded-lg shadow-2xl w-48 md:w-56 mb-6 border-4 border-gray-800">
+
+    <div class="w-full md:w-96 flex flex-col items-center">
+      <div id="edit-status" class="mt-2 w-full max-w-xs">
+        <h2 class="font-semibold text-lg mb-2 flex items-center">
+          <i class="fa-solid fa-pen-to-square mr-2"></i>Your Status
+        </h2>
+        <form method="post" action="{% if content %}{% url 'update_tracking' content.pk %}{% endif %}" class="space-y-3 w-full text-sm">
+          {% csrf_token %}
+          <fieldset {% if not request.session.profile_id or not content %}disabled class="opacity-50"{% endif %}>
+            <p class="text-red-500 text-xs italic mb-2">* Your list is public by default.</p>
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center mb-2">
+                <label for="status" class="text-gray-300 mr-2 w-24">Status:</label>
+                <select id="status" name="status" class="w-40 bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  {% for value, display in status_choices %}
+                    <option value="{{ value }}" {% if watchlist_entry and watchlist_entry.status == value %}selected{% endif %}>{{ display|title }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="flex items-center mb-2">
+                <label for="progress" class="text-gray-300 mr-2 w-24">Eps Seen:</label>
+                <input id="progress" name="progress" type="number" value="{{ watchlist_entry.progress|default:0 }}"
+                  class="w-20 bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  min="0" {% if content.episodes %}max="{{ content.episodes }}"{% endif %}>
+                <span class="mx-1">/ {{ content.episodes|default:'?' }}</span>
+                <button type="button" class="text-blue-400 hover:text-blue-600" onclick="this.previousElementSibling.previousElementSibling.stepUp()">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+              <div class="flex items-center mb-2">
+                <label for="score" class="text-gray-300 mr-2 w-24">Your Score:</label>
+                <select id="score" name="score" class="w-40 bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select</option>
+                  {% for value, display in score_labels %}
+                    <option value="{{ value }}" {% if watchlist_entry and watchlist_entry.score == value %}selected{% endif %}>({{ value }}) {{ display }}</option>
+                  {% endfor %}
+                </select>
+              </div>
             </div>
-            <a href="#edit-status" class="text-blue-400 hover:underline text-xs"><i
-                    class="fa-solid fa-pen mr-1"></i>Edit Status</a>
-        </div>
-        {% endif %}
+            <div class="flex items-center gap-4 mt-2">
+              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-semibold">Update</button>
+              <a href="#" class="text-xs text-gray-300 hover:underline">Edit Details</a>
+            </div>
+          </fieldset>
+          {% if not request.session.profile_id %}
+            <p class="text-xs text-yellow-400 mt-2"><a href="{% url 'login' %}" class="font-bold underline">Log in</a> to update your status.</p>
+          {% elif not content %}
+            <p class="text-xs text-yellow-400 mt-2">This title must be added to your library before you can track it.</p>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right side: Tabs -->
+  <div class="w-full md:w-3/4" x-data="{ tab: 'details' }">
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6 border-b border-gray-700">
+      <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200" :class="tab === 'details' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'" @click="tab = 'details'">
+        <i class="fa-solid fa-circle-info mr-1"></i>Details
+      </button>
+      <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200" :class="tab === 'characters' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'" @click="tab = 'characters'">
+        <i class="fa-solid fa-users mr-1"></i>Cast & Crew
+      </button>
+      {% if content.content_type and content.content_type != 'movie' or tmdb_data and tmdb_data.first_air_date %}
+      <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200" :class="tab === 'episodes' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'" @click="tab = 'episodes'">
+        <i class="fa-solid fa-list-ol mr-1"></i>Episodes
+      </button>
+      {% endif %}
+      <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200" :class="tab === 'related' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'" @click="tab = 'related'">
+        <i class="fa-solid fa-link mr-1"></i>Related
+      </button>
+      <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200" :class="tab === 'videos' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'" @click="tab = 'videos'">
+        <i class="fa-solid fa-play-circle mr-1"></i>Videos
+      </button>
+      <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200" :class="tab === 'share' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'" @click="tab = 'share'">
+        <i class="fa-solid fa-share-nodes mr-1"></i>Share
+      </button>
     </div>
 
-    <!-- Right: Tabs and Content -->
-    <div class="w-full md:w-3/4" x-data="{ tab: 'details' }">
-        <!-- Tab Bar -->
-        <div class="flex gap-2 mb-6 border-b border-gray-700">
-            <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200"
-                :class="tab === 'details' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'"
-                @click="tab = 'details'">
-                <i class="fa-solid fa-circle-info mr-1"></i>Details
-            </button>
-            <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200"
-                :class="tab === 'characters' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'"
-                @click="tab = 'characters'">
-                <i class="fa-solid fa-users mr-1"></i>Cast & Crew
-            </button>
-            {% if content.content_type and content.content_type != 'movie' or tmdb_data and tmdb_data.first_air_date %}
-            <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200"
-                :class="tab === 'episodes' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'"
-                @click="tab = 'episodes'">
-                <i class="fa-solid fa-list-ol mr-1"></i>Episodes
-            </button>
-            {% endif %}
-            <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200"
-                :class="tab === 'related' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'"
-                @click="tab = 'related'">
-                <i class="fa-solid fa-link mr-1"></i>Related
-            </button>
-            <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200"
-                :class="tab === 'videos' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'"
-                @click="tab = 'videos'">
-                <i class="fa-solid fa-play-circle mr-1"></i>Videos
-            </button>
-            <button class="px-4 py-2 font-semibold focus:outline-none border-b-2 transition-all duration-200"
-                :class="tab === 'share' ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400'"
-                @click="tab = 'share'">
-                <i class="fa-solid fa-share-nodes mr-1"></i>Share
-            </button>
-        </div>
-
-        <!-- Details Tab -->
+    <!-- Details Tab -->
         <div x-show="tab === 'details'" class="space-y-4">
             <h1 class="text-3xl font-bold mb-1 flex items-center gap-2">
                 <i class="fa-solid fa-film text-blue-400"></i>
@@ -173,6 +205,46 @@
                     {% endif %}
                 </p>
             </div>
+            <!-- Compact Status Bar -->
+            <div class="flex items-center space-x-2 bg-gray-900 p-2 rounded mb-6">
+                <!-- Status Dropdown -->
+                <select class="bg-gray-700 text-white rounded px-2 py-1 text-sm focus:outline-none">
+                <option>Plan to Watch</option>
+                <option>Watching</option>
+                <option>Completed</option>
+                <option>On Hold</option>
+                <option>Dropped</option>
+                </select>
+            
+                <!-- Score Dropdown -->
+                <div class="relative flex items-center">
+                <select class="bg-gray-700 text-white rounded px-2 py-1 text-sm pr-6 focus:outline-none">
+                    <option>Select</option>
+                    <option>(10) Masterpiece</option>
+                    <option>(9) Great</option>
+                    <option>(8) Very Good</option>
+                    <option>(7) Good</option>
+                    <option>(6) Fine</option>
+                    <option>(5) Average</option>
+                    <option>(4) Bad</option>
+                    <option>(3) Very Bad</option>
+                    <option>(2) Horrible</option>
+                    <option>(1) Appalling</option>
+                </select>
+                <!-- Star icon -->
+                <i class="fa-solid fa-star text-yellow-400 absolute right-2 pointer-events-none"></i>
+                </div>
+            
+                <!-- Episodes -->
+                <div class="flex items-center bg-gray-700 text-white rounded px-2 py-1 text-sm">
+                <label class="mr-1 text-gray-300">Episodes:</label>
+                <span class="text-blue-400">0/?</span>
+                <button type="button" class="ml-1 text-blue-400 hover:text-blue-500">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                </div>
+            </div>
+
             {% if not content and tmdb_data and tmdb_data.id %}
             <form method="post" action="{% url 'import_tmdb_content' %}" class="mb-6">
                 {% csrf_token %}
@@ -185,60 +257,10 @@
                 </button>
             </form>
             {% endif %}
-            {% if user.is_authenticated and content %}
-            <form method="post" action="{% url 'update_tracking' content.pk %}">
-                {% csrf_token %}
-                <div class="bg-gray-900 text-white p-4 rounded-md space-y-3 w-72 text-sm mx-auto">
-                    <!-- Status -->
-                    <div class="flex items-center">
-                        <label for="status" class="w-24 text-gray-300">Status:</label>
-                        <select id="status" name="status" class="bg-gray-700 text-white rounded px-2 py-1 flex-1">
-                            {% for value, label in status_choices %}
-                            <option value="{{ value }}" {% if watchlist_entry and watchlist_entry.status == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Episodes Seen -->
-                    <div class="flex items-center">
-                        <label for="progress" class="w-24 text-gray-300">Eps Seen:</label>
-                        <div class="flex items-center space-x-1 flex-1">
-                            <input id="progress" name="progress" type="number" min="0"
-                                value="{% if watchlist_entry %}{{ watchlist_entry.progress }}{% else %}0{% endif %}"
-                                class="w-16 bg-gray-700 text-white px-2 py-1 rounded">
-                            <span>/ {{ content.episodes|default:'?' }}</span>
-                            <button type="button" class="text-blue-400 hover:text-blue-600"
-                                onclick="document.getElementById('progress').stepUp();">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Score -->
-                    <div class="flex items-center">
-                        <label for="score" class="w-24 text-gray-300">Your Score:</label>
-                        <select id="score" name="score" class="bg-gray-700 text-white rounded px-2 py-1 flex-1">
-                            <option value="">-</option>
-                            {% for i, label in score_labels %}
-                            <option value="{{ i }}" {% if watchlist_entry and watchlist_entry.score == i %}selected{% endif %}>({{ i }}) {{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="flex items-center gap-2">
-                        <button type="submit"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-semibold">
-                            Update
-                        </button>
-                        <a href="#edit-details" class="text-xs text-gray-300 hover:underline">Edit Details</a>
-                    </div>
-                </div>
-            </form>
-            {% endif %}
         </div>
 
-        <!-- Characters Tab -->
+
+    <!-- Characters Tab -->
         <div x-show="tab === 'characters'" class="space-y-4">
             <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-users mr-2"></i>Cast
             </h2>
@@ -305,7 +327,7 @@
             {% endif %}
         </div>
 
-        <!-- Episodes Tab (collapsible season panels) -->
+    <!-- Episodes Tab (collapsible season panels) -->
         <div x-show="tab === 'episodes'" class="space-y-4">
             <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-list-ol mr-2"></i>Episodes
             </h2>
@@ -447,7 +469,7 @@
             });
         </script>
 
-        <!-- Related Tab -->
+    <!-- Related Tab -->
         <div x-show="tab === 'related'" class="space-y-4">
             <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-link mr-2"></i>Related
                 Entries</h2>
@@ -473,7 +495,7 @@
             {% endif %}
         </div>
 
-        <!-- Videos Tab -->
+            <!-- Videos Tab -->
         <div x-show="tab === 'videos'" class="space-y-4">
             <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-play-circle mr-2"></i>Videos
             </h2>
@@ -504,22 +526,10 @@
             {% endif %}
         </div>
 
-        <!-- Share Tab -->
-        <div x-show="tab === 'share'" class="space-y-4">
-            <h2 class="font-semibold text-lg mb-2 flex items-center"><i class="fa-solid fa-share-nodes mr-2"></i>Share
-            </h2>
-            <div class="flex gap-4 items-center">
-                <button onclick="navigator.clipboard.writeText(window.location.href)"
-                    class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded flex items-center gap-2"><i
-                        class="fa-solid fa-link"></i>Copy Link</button>
-                <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}" target="_blank"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded flex items-center gap-2"><i
-                        class="fa-brands fa-twitter"></i>Twitter</a>
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank"
-                    class="bg-blue-700 hover:bg-blue-800 text-white px-3 py-2 rounded flex items-center gap-2"><i
-                        class="fa-brands fa-facebook"></i>Facebook</a>
-            </div>
-        </div>
+    <div x-show="tab === 'share'">
+      {% comment %} Paste your Share tab full content here {% endcomment %}
     </div>
+
+  </div>
 </div>
 {% endblock %}
