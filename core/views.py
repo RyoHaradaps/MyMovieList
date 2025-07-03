@@ -1263,6 +1263,12 @@ def import_tmdb_content(request):
         tmdb_id=tmdb_id,
     )
 
+    # Save genres from TMDB
+    genres = data.get('genres', [])
+    for genre in genres:
+        genre_obj, _ = Genre.objects.get_or_create(name=genre['name'])
+        content.genres.add(genre_obj)
+
     # Create Watchlist entry for this user
     if profile_id:
         profile = Profile.objects.get(pk=profile_id)

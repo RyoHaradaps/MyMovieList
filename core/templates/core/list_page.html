@@ -124,20 +124,28 @@
                 <td class="px-4 py-2 text-center">{{ forloop.counter }}</td>
                 <td class="px-4 py-2 text-center">
                     {% if item.tmdb_id %}
+                    {% if item.content_type == 'movie' %}
                     <a href="{% url 'tmdb_movie_detail' item.tmdb_id %}">
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                            class="w-12 h-16 object-cover rounded mx-auto">
-                    </a>
-                    {% else %}
-                    <a href="{% url 'content_detail' item.pk %}">
-                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                            class="w-12 h-16 object-cover rounded mx-auto">
-                    </a>
-                    {% endif %}
+                        {% else %}
+                        <a href="{% url 'tmdb_series_detail' item.tmdb_id %}">
+                            {% endif %}
+                            <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                                class="w-12 h-16 object-cover rounded mx-auto">
+                        </a>
+                        {% else %}
+                        <a href="{% url 'content_detail' item.pk %}">
+                            <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                                class="w-12 h-16 object-cover rounded mx-auto">
+                        </a>
+                        {% endif %}
                 </td>
                 <td class="px-4 py-2 font-semibold text-center">
                     {% if item.tmdb_id %}
+                    {% if item.content_type == 'movie' %}
                     <a href="{% url 'tmdb_movie_detail' item.tmdb_id %}" class="hover:underline">{{ item.title }}</a>
+                    {% else %}
+                    <a href="{% url 'tmdb_series_detail' item.tmdb_id %}" class="hover:underline">{{ item.title }}</a>
+                    {% endif %}
                     {% else %}
                     <a href="{% url 'content_detail' item.pk %}" class="hover:underline">{{ item.title }}</a>
                     {% endif %}
