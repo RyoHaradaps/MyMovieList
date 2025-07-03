@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load static %}
 {% load custom_tags %}
 {% block title %}
 {% if tmdb_data %}
@@ -13,7 +14,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="flex flex-col md:flex-row gap-2 bg-gray-900 rounded-xl shadow-xl p-6">
+
+<div class="flex flex-col md:flex-row gap-6 bg-gray-900 rounded-xl shadow-xl p-6">
 
   <!-- Left: Poster & User Status -->
   <div class="w-full md:w-auto md:max-w-xs flex flex-col items-center">
@@ -26,57 +28,77 @@
             {% else %}{{ content.title }}{% endif %}"
       class="rounded-lg shadow-2xl w-48 md:w-56 mb-6 border-4 border-gray-800">
 
-    <div class="w-full md:w-96 flex flex-col items-center">
-      <div id="edit-status" class="mt-2 w-full max-w-xs">
-        <h2 class="font-semibold text-lg mb-2 flex items-center">
-          <i class="fa-solid fa-pen-to-square mr-2"></i>Your Status
-        </h2>
-        <form method="post" action="{% if content %}{% url 'update_tracking' content.pk %}{% endif %}" class="space-y-3 w-full text-sm">
-          {% csrf_token %}
-          <fieldset {% if not request.session.profile_id or not content %}disabled class="opacity-50"{% endif %}>
-            <p class="text-red-500 text-xs italic mb-2">* Your list is public by default.</p>
-            <div class="flex flex-col gap-2">
-              <div class="flex items-center mb-2">
-                <label for="status" class="text-gray-300 mr-2 w-24">Status:</label>
-                <select id="status" name="status" class="w-40 bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  {% for value, display in status_choices %}
-                    <option value="{{ value }}" {% if watchlist_entry and watchlist_entry.status == value %}selected{% endif %}>{{ display|title }}</option>
-                  {% endfor %}
-                </select>
+      <div x-data="{ openStatus: false }" class="w-full max-w-xs flex flex-col items-center">
+        <!-- Collapsible Header -->
+        <button
+          @click="openStatus = !openStatus"
+          class="flex items-center w-full justify-between px-3 py-2 bg-gray-800 rounded-t-lg text-left text-base font-semibold text-white focus:outline-none"
+        >
+          <span><i class="fa-solid fa-pen-to-square mr-2"></i>Your Status</span>
+          <svg :class="{'transform rotate-180': openStatus}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <!-- Collapsible Content -->
+        <div x-show="openStatus" x-transition class="w-full bg-gray-800 rounded-b-lg p-2 text-sm">
+          <form method="post" action="{% if content %}{% url 'update_tracking' content.pk %}{% endif %}" class="space-y-2 w-full text-sm">
+            {% csrf_token %}
+            <fieldset>
+              <p class="text-red-500 text-xs italic mb-2">* Your list is public by default.</p>
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center mb-1">
+                  <label for="status-main" class="text-gray-300 mr-2 w-20">Status:</label>
+                  <select id="status-main" name="status"
+                    data-content-type="{{ content.content_type }}"
+                    class="w-32 bg-gray-700 text-white border border-gray-600 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="plan_to_watch">Plan to Watch</option>
+                    <option value="watching">Watching</option>
+                    <option value="completed">Completed</option>
+                    <option value="on_hold">On Hold</option>
+                    <option value="dropped">Dropped</option>
+                  </select>
+                </div>
+                <div class="flex items-center mb-1">
+                  <label for="progress-main" class="text-gray-300 mr-2 w-20">Eps Seen:</label>
+                  <input id="progress-main" name="progress" type="number" value="{{ watchlist_entry.progress|default:0 }}"
+                    class="w-12 bg-gray-700 text-white border border-gray-600 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                    min="0" {% if content.episodes %}max="{{ content.episodes }}"{% endif %}>
+                  <span class="mx-1">/ {{ content.episodes|default:'?' }}</span>
+                  <button type="button" class="text-blue-400 hover:text-blue-600" onclick="document.getElementById('progress-main').stepUp()">
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+                <div class="flex items-center mb-1">
+                  <label for="score-main" class="text-gray-300 mr-2 w-20">Your Score:</label>
+                  <select id="score-main" name="score"
+                    class="w-32 bg-gray-700 text-white border border-gray-600 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select</option>
+                    <option value="10">(10) Masterpiece</option>
+                    <option value="9">(9) Great</option>
+                    <option value="8">(8) Very Good</option>
+                    <option value="7">(7) Good</option>
+                    <option value="6">(6) Fine</option>
+                    <option value="5">(5) Average</option>
+                    <option value="4">(4) Bad</option>
+                    <option value="3">(3) Very Bad</option>
+                    <option value="2">(2) Horrible</option>
+                    <option value="1">(1) Appalling</option>
+                  </select>
+                </div>
               </div>
-              <div class="flex items-center mb-2">
-                <label for="progress" class="text-gray-300 mr-2 w-24">Eps Seen:</label>
-                <input id="progress" name="progress" type="number" value="{{ watchlist_entry.progress|default:0 }}"
-                  class="w-20 bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="0" {% if content.episodes %}max="{{ content.episodes }}"{% endif %}>
-                <span class="mx-1">/ {{ content.episodes|default:'?' }}</span>
-                <button type="button" class="text-blue-400 hover:text-blue-600" onclick="this.previousElementSibling.previousElementSibling.stepUp()">
-                  <i class="fa-solid fa-plus"></i>
-                </button>
+              <div class="flex items-center gap-2 mt-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-semibold">Update</button>
+                <a href="#" class="text-xs text-gray-300 hover:underline">Edit Details</a>
               </div>
-              <div class="flex items-center mb-2">
-                <label for="score" class="text-gray-300 mr-2 w-24">Your Score:</label>
-                <select id="score" name="score" class="w-40 bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">Select</option>
-                  {% for value, display in score_labels %}
-                    <option value="{{ value }}" {% if watchlist_entry and watchlist_entry.score == value %}selected{% endif %}>({{ value }}) {{ display }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-            </div>
-            <div class="flex items-center gap-4 mt-2">
-              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-semibold">Update</button>
-              <a href="#" class="text-xs text-gray-300 hover:underline">Edit Details</a>
-            </div>
-          </fieldset>
-          {% if not request.session.profile_id %}
-            <p class="text-xs text-yellow-400 mt-2"><a href="{% url 'login' %}" class="font-bold underline">Log in</a> to update your status.</p>
-          {% elif not content %}
-            <p class="text-xs text-yellow-400 mt-2">This title must be added to your library before you can track it.</p>
-          {% endif %}
-        </form>
+            </fieldset>
+            {% if not request.session.profile_id %}
+              <p class="text-xs text-yellow-400 mt-2"><a href="{% url 'login' %}" class="font-bold underline">Log in</a> to update your status.</p>
+            {% elif not content %}
+              <p class="text-xs text-yellow-400 mt-2">This title must be added to your library before you can track it.</p>
+            {% endif %}
+          </form>
+        </div>
       </div>
-    </div>
   </div>
 
   <!-- Right side: Tabs -->
@@ -207,56 +229,65 @@
             </div>
             <!-- Compact Status Bar -->
             <div class="flex items-center space-x-2 bg-gray-900 p-2 rounded mb-6">
-                <!-- Status Dropdown -->
-                <select class="bg-gray-700 text-white rounded px-2 py-1 text-sm focus:outline-none">
-                <option>Plan to Watch</option>
-                <option>Watching</option>
-                <option>Completed</option>
-                <option>On Hold</option>
-                <option>Dropped</option>
+                {% if not content and tmdb_data and tmdb_data.id %}
+                <!-- Movie not in DB: Show Import button -->
+                <form method="post" action="{% url 'import_tmdb_content' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="tmdb_id" value="{{ tmdb_data.id }}">
+                    <input type="hidden" name="tmdb_type" value="{% if tmdb_data.title %}movie{% else %}series{% endif %}">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm font-semibold">
+                    <i class="fa-solid fa-plus"></i> Add to My List
+                    </button>
+                </form>
+                {% elif content and not watchlist_entry %}
+                <!-- Movie in DB but not in watchlist: Show Add to List button -->
+                <form method="post" action="{% url 'add_to_list' content.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-semibold">
+                    <i class="fa-solid fa-plus"></i> Add to List
+                    </button>
+                </form>
+                {% elif watchlist_entry %}
+                <!-- Show Status dropdown -->
+                <select id="status-compact" data-content-type="{{ content.content_type }}" class="bg-gray-700 text-white rounded px-2 py-1 text-sm focus:outline-none">
+                    <option value="plan_to_watch" {% if watchlist_entry.status == 'plan_to_watch' %}selected{% endif %}>Plan to Watch</option>
+                    <option value="watching" {% if watchlist_entry.status == 'watching' %}selected{% endif %}>Watching</option>
+                    <option value="completed" {% if watchlist_entry.status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="on_hold" {% if watchlist_entry.status == 'on_hold' %}selected{% endif %}>On Hold</option>
+                    <option value="dropped" {% if watchlist_entry.status == 'dropped' %}selected{% endif %}>Dropped</option>
                 </select>
-            
+                {% endif %}
+              
                 <!-- Score Dropdown -->
                 <div class="relative flex items-center">
-                <select class="bg-gray-700 text-white rounded px-2 py-1 text-sm pr-6 focus:outline-none">
-                    <option>Select</option>
-                    <option>(10) Masterpiece</option>
-                    <option>(9) Great</option>
-                    <option>(8) Very Good</option>
-                    <option>(7) Good</option>
-                    <option>(6) Fine</option>
-                    <option>(5) Average</option>
-                    <option>(4) Bad</option>
-                    <option>(3) Very Bad</option>
-                    <option>(2) Horrible</option>
-                    <option>(1) Appalling</option>
-                </select>
-                <!-- Star icon -->
-                <i class="fa-solid fa-star text-yellow-400 absolute right-2 pointer-events-none"></i>
+                  <select id="score-compact" class="bg-gray-700 text-white rounded px-2 py-1 text-sm focus:outline-none">
+                    <option value="">Select</option>
+                    <option value="10">(10) Masterpiece</option>
+                    <option value="9">(9) Great</option>
+                    <option value="8">(8) Very Good</option>
+                    <option value="7">(7) Good</option>
+                    <option value="6">(6) Fine</option>
+                    <option value="5">(5) Average</option>
+                    <option value="4">(4) Bad</option>
+                    <option value="3">(3) Very Bad</option>
+                    <option value="2">(2) Horrible</option>
+                    <option value="1">(1) Appalling</option>
+                  </select>
+                  <!-- Star icon -->
+                  <i class="fa-solid fa-star text-yellow-400 absolute right-4 pointer-events-none"></i>
                 </div>
-            
+              
                 <!-- Episodes -->
                 <div class="flex items-center bg-gray-700 text-white rounded px-2 py-1 text-sm">
-                <label class="mr-1 text-gray-300">Episodes:</label>
-                <span class="text-blue-400">0/?</span>
-                <button type="button" class="ml-1 text-blue-400 hover:text-blue-500">
+                  <label class="mr-1 text-gray-300">Episodes:</label>
+                  <input id="progress-compact" type="number" value="0" min="0"
+                    class="w-12 bg-gray-700 text-blue-400 border-none focus:ring-0 text-center appearance-none" />
+                  <span class="mx-1">/ ?</span>
+                  <button type="button" class="ml-1 text-blue-400 hover:text-blue-500" onclick="document.getElementById('progress-compact').stepUp()">
                     <i class="fa-solid fa-plus"></i>
-                </button>
+                  </button>
                 </div>
-            </div>
-
-            {% if not content and tmdb_data and tmdb_data.id %}
-            <form method="post" action="{% url 'import_tmdb_content' %}" class="mb-6">
-                {% csrf_token %}
-                <input type="hidden" name="tmdb_id" value="{{ tmdb_data.id }}">
-                <input type="hidden" name="tmdb_type" value="{% if tmdb_data.title %}movie{% else %}series{% endif %}">
-                <button type="submit"
-                    class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded shadow flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Add to My List (import this title to your library to enable
-                    tracking)
-                </button>
-            </form>
-            {% endif %}
+              </div>
         </div>
 
 
@@ -441,6 +472,10 @@
                 display: none;
                 /* Chrome, Safari, Opera */
             }
+
+            #progress-compact {
+                appearance: textfield;
+            }
         </style>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -532,4 +567,30 @@
 
   </div>
 </div>
+<script>
+    // Status
+    document.getElementById('status-main').addEventListener('change', function() {
+      document.getElementById('status-compact').value = this.value;
+    });
+    document.getElementById('status-compact').addEventListener('change', function() {
+      document.getElementById('status-main').value = this.value;
+    });
+  
+    // Progress
+    document.getElementById('progress-main').addEventListener('input', function() {
+      document.getElementById('progress-compact').value = this.value;
+    });
+    document.getElementById('progress-compact').addEventListener('input', function() {
+      document.getElementById('progress-main').value = this.value;
+    });
+  
+    // Score
+    document.getElementById('score-main').addEventListener('change', function() {
+      document.getElementById('score-compact').value = this.value;
+    });
+    document.getElementById('score-compact').addEventListener('change', function() {
+      document.getElementById('score-main').value = this.value;
+    });
+</script>
+<script src="{% static 'js/status_progress.js' %}"></script>
 {% endblock %}

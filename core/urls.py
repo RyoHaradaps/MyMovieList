@@ -29,4 +29,5 @@ urlpatterns = [
     path('tmdb/movie/<int:tmdb_id>/', views.tmdb_movie_detail, name='tmdb_movie_detail'),
     path('tmdb/series/<int:tmdb_id>/', views.tmdb_series_detail, name='tmdb_series_detail'),
     path('content/import_tmdb/', views.import_tmdb_content, name='import_tmdb_content'),
+    path('content/<int:content_id>/add_to_list/', views.add_to_list, name='add_to_list'),
 ]

@@ -1,60 +1,160 @@
 {% extends "core/base.html" %}
 {% block title %}All {{ type }}s - MyMovieList{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-4 text-center uppercase">All {{ type }}s</h1>
-    <div class="flex justify-center mb-4">
-        <div class="flex gap-4 border-b">
-            <a href="#" class="pb-2 px-3 border-b-2 border-sky-500 font-semibold text-sky-500">All</a>
-            <a href="#" class="pb-2 px-3 hover:text-sky-500">Watching</a>
-            <a href="#" class="pb-2 px-3 hover:text-sky-500">Completed</a>
-            <a href="#" class="pb-2 px-3 hover:text-sky-500">On Hold</a>
-            <a href="#" class="pb-2 px-3 hover:text-sky-500">Dropped</a>
-            <a href="#" class="pb-2 px-3 hover:text-sky-500">Plan to Watch</a>
-        </div>
+{% if type == 'Movie' %}
+{% with banner_type='MOVIES' %}
+<div class="bg-blue-700 py-8 flex flex-col items-center">
+    <h2 class="text-white text-xl font-semibold mb-2 tracking-wide">Organize, Discuss, Discover</h2>
+    <h1 class="text-white text-5xl font-extrabold font-sans mb-2">MyMovieList</h1>
+    <div class="text-white text-lg tracking-widest font-semibold">
+        HOW&nbsp;MUCH&nbsp;{{ banner_type }}&nbsp;HAVE&nbsp;YOU&nbsp;SEEN?
     </div>
-    <div class="overflow-x-auto rounded-lg shadow">
-        <table class="min-w-full bg-gray-800 text-white">
-            <thead>
-                <tr>
-                    <th class="px-4 py-2">#</th>
-                    <th class="px-4 py-2">Image</th>
-                    <th class="px-4 py-2">Title</th>
-                    <th class="px-4 py-2">Score</th>
-                    <th class="px-4 py-2">Type</th>
-                    <th class="px-4 py-2">Progress</th>
-                    <th class="px-4 py-2">Tags</th>
-                    <th class="px-4 py-2">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in items %}
-                <tr class="border-b border-gray-700">
-                    <td class="px-4 py-2">{{ forloop.counter }}</td>
-                    <td class="px-4 py-2">
-                        <a href="{% url 'content_detail' item.pk %}">
-                            <img src="{{ item.poster_url }}" alt="{{ item.title }}"
-                                class="w-12 h-16 object-cover rounded">
-                        </a>
-                    </td>
-                    <td class="px-4 py-2 font-semibold">
-                        <a href="{% url 'content_detail' item.pk %}" class="hover:underline">{{ item.title }}</a>
-                    </td>
-                    <td class="px-4 py-2 text-center">-</td>
-                    <td class="px-4 py-2">{{ item.get_content_type_display }}</td>
-                    <td class="px-4 py-2 text-center">-</td>
-                    <td class="px-4 py-2 text-center">-</td>
-                    <td class="px-4 py-2 text-center">
-                        <a href="#" class="text-sky-400 hover:underline">Edit</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="8" class="text-center py-4 text-gray-400">No {{ type|lower }}s found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+</div>
+{% endwith %}
+{% elif type == 'Series' %}
+{% with banner_type='SERIES' %}
+<div class="bg-blue-700 py-8 flex flex-col items-center">
+    <h2 class="text-white text-xl font-semibold mb-2 tracking-wide">Organize, Discuss, Discover</h2>
+    <h1 class="text-white text-5xl font-extrabold font-sans mb-2">MyMovieList</h1>
+    <div class="text-white text-lg tracking-widest font-semibold">
+        HOW&nbsp;MUCH&nbsp;{{ banner_type }}&nbsp;HAVE&nbsp;YOU&nbsp;SEEN?
     </div>
+</div>
+{% endwith %}
+{% elif type == 'Anime' %}
+{% with banner_type='ANIME' %}
+<div class="bg-blue-700 py-8 flex flex-col items-center">
+    <h2 class="text-white text-xl font-semibold mb-2 tracking-wide">Organize, Discuss, Discover</h2>
+    <h1 class="text-white text-5xl font-extrabold font-sans mb-2">MyMovieList</h1>
+    <div class="text-white text-lg tracking-widest font-semibold">
+        HOW&nbsp;MUCH&nbsp;{{ banner_type }}&nbsp;HAVE&nbsp;YOU&nbsp;SEEN?
+    </div>
+</div>
+{% endwith %}
+{% elif type == 'Animated' or type == 'AnimatedShow' or type == 'AnimatedShows' %}
+{% with banner_type='ANIMATED SHOWS' %}
+<div class="bg-blue-700 py-8 flex flex-col items-center">
+    <h2 class="text-white text-xl font-semibold mb-2 tracking-wide">Organize, Discuss, Discover</h2>
+    <h1 class="text-white text-5xl font-extrabold font-sans mb-2">MyMovieList</h1>
+    <div class="text-white text-lg tracking-widest font-semibold">
+        HOW&nbsp;MUCH&nbsp;{{ banner_type }}&nbsp;HAVE&nbsp;YOU&nbsp;SEEN?
+    </div>
+</div>
+{% endwith %}
+{% elif type == 'Manga' %}
+{% with banner_type='MANGA' %}
+<div class="bg-blue-700 py-8 flex flex-col items-center">
+    <h2 class="text-white text-xl font-semibold mb-2 tracking-wide">Organize, Discuss, Discover</h2>
+    <h1 class="text-white text-5xl font-extrabold font-sans mb-2">MyMovieList</h1>
+    <div class="text-white text-lg tracking-widest font-semibold">
+        HOW&nbsp;MUCH&nbsp;{{ banner_type }}&nbsp;HAVE&nbsp;YOU&nbsp;SEEN?
+    </div>
+</div>
+{% endwith %}
+{% elif type == 'Comic' %}
+{% with banner_type='COMICS' %}
+<div class="bg-blue-700 py-8 flex flex-col items-center">
+    <h2 class="text-white text-xl font-semibold mb-2 tracking-wide">Organize, Discuss, Discover</h2>
+    <h1 class="text-white text-5xl font-extrabold font-sans mb-2">MyMovieList</h1>
+    <div class="text-white text-lg tracking-widest font-semibold">
+        HOW&nbsp;MUCH&nbsp;{{ banner_type }}&nbsp;HAVE&nbsp;YOU&nbsp;SEEN?
+    </div>
+</div>
+{% endwith %}
+{% else %}
+{% with banner_type=type|upper %}
+<div class="bg-blue-700 py-8 flex flex-col items-center">
+    <h2 class="text-white text-xl font-semibold mb-2 tracking-wide">Organize, Discuss, Discover</h2>
+    <h1 class="text-white text-5xl font-extrabold font-sans mb-2">MyMovieList</h1>
+    <div class="text-white text-lg tracking-widest font-semibold">
+        HOW&nbsp;MUCH&nbsp;{{ banner_type }}&nbsp;HAVE&nbsp;YOU&nbsp;SEEN?
+    </div>
+</div>
+{% endwith %}
+{% endif %}
+
+<!-- MAL-style Tabs -->
+<div class="bg-white">
+    <div class="flex justify-center border-b border-blue-700">
+        <a href="?status=all"
+            class="px-4 py-3 font-semibold text-gray-700 hover:text-blue-700 border-b-2 transition-all duration-150 {% if current_status == 'all' %}border-blue-700 text-blue-700{% else %}border-transparent{% endif %}">
+            All {{ type }}
+        </a>
+        <a href="?status=watching"
+            class="px-4 py-3 font-semibold text-gray-700 hover:text-blue-700 border-b-2 transition-all duration-150 {% if current_status == 'watching' %}border-blue-700 text-blue-700{% else %}border-transparent{% endif %}">
+            Currently Watching
+        </a>
+        <a href="?status=completed"
+            class="px-4 py-3 font-semibold text-gray-700 hover:text-blue-700 border-b-2 transition-all duration-150 {% if current_status == 'completed' %}border-blue-700 text-blue-700{% else %}border-transparent{% endif %}">
+            Completed
+        </a>
+        <a href="?status=on_hold"
+            class="px-4 py-3 font-semibold text-gray-700 hover:text-blue-700 border-b-2 transition-all duration-150 {% if current_status == 'on_hold' %}border-blue-700 text-blue-700{% else %}border-transparent{% endif %}">
+            On Hold
+        </a>
+        <a href="?status=dropped"
+            class="px-4 py-3 font-semibold text-gray-700 hover:text-blue-700 border-b-2 transition-all duration-150 {% if current_status == 'dropped' %}border-blue-700 text-blue-700{% else %}border-transparent{% endif %}">
+            Dropped
+        </a>
+        <a href="?status=plan_to_watch"
+            class="px-4 py-3 font-semibold text-gray-700 hover:text-blue-700 border-b-2 transition-all duration-150 {% if current_status == 'plan_to_watch' %}border-blue-700 text-blue-700{% else %}border-transparent{% endif %}">
+            Plan to Watch
+        </a>
+    </div>
+</div>
+
+<!-- MAL-style Table Container -->
+<div class="bg-white rounded-lg shadow mx-auto mt-6 max-w-5xl">
+    <table class="min-w-full text-gray-800">
+        <thead>
+            <tr>
+                <th class="px-4 py-2">#</th>
+                <th class="px-4 py-2">Image</th>
+                <th class="px-4 py-2 text-center">Title</th>
+                <th class="px-4 py-2 text-center">Score</th>
+                <th class="px-4 py-2 text-center">Type</th>
+                <th class="px-4 py-2 text-center">Progress</th>
+                <th class="px-4 py-2 text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors">
+                <td class="px-4 py-2 text-center">{{ forloop.counter }}</td>
+                <td class="px-4 py-2 text-center">
+                    {% if item.tmdb_id %}
+                    <a href="{% url 'tmdb_movie_detail' item.tmdb_id %}">
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                            class="w-12 h-16 object-cover rounded mx-auto">
+                    </a>
+                    {% else %}
+                    <a href="{% url 'content_detail' item.pk %}">
+                        <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                            class="w-12 h-16 object-cover rounded mx-auto">
+                    </a>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-2 font-semibold text-center">
+                    {% if item.tmdb_id %}
+                    <a href="{% url 'tmdb_movie_detail' item.tmdb_id %}" class="hover:underline">{{ item.title }}</a>
+                    {% else %}
+                    <a href="{% url 'content_detail' item.pk %}" class="hover:underline">{{ item.title }}</a>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-2 text-center">-</td>
+                <td class="px-4 py-2 text-center">{{ item.get_content_type_display }}</td>
+                <td class="px-4 py-2 text-center">-</td>
+                <td class="px-4 py-2 text-center">
+                    <a href="#" class="text-sky-400 hover:underline">Edit</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center py-4 text-gray-400">No {{ type|lower }}s found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

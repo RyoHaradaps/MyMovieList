@@ -11,6 +11,7 @@ from .services import get_latest_animated_movies, get_upcoming_animated_movies
 from django.http import Http404
 from collections import defaultdict
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 
 # Create your views here.
 def index(request):
@@ -296,35 +297,38 @@ def movie_list(request):
     except Profile.DoesNotExist:
         return redirect('login')
     
-    # Get user's watchlist for movies only
+    # Get status filter from GET params
+    status = request.GET.get('status')
     watchlist_items = Watchlist.objects.filter(
         profile=profile,
         content__content_type='movie'
     ).select_related('content').order_by('-added_on')
-    
+
+    if status and status != 'all':
+        watchlist_items = watchlist_items.filter(status=status)
+
     return render(request, 'core/list_page.html', {
         'items': [item.content for item in watchlist_items],
         'type': 'Movie',
         'profile': profile,
         'is_watchlist': True,
+        'current_status': status or 'all',
     })
 
 def series_list(request):
     profile_id = request.session.get('profile_id')
     if not profile_id:
         return redirect('login')
-    
     try:
         profile = Profile.objects.get(id=profile_id)
     except Profile.DoesNotExist:
         return redirect('login')
-    
-    # Get user's watchlist for series only
+    # Only series WITHOUT Animation genre
     watchlist_items = Watchlist.objects.filter(
         profile=profile,
         content__content_type='series'
-    ).select_related('content').order_by('-added_on')
-    
+    ).exclude(content__genres__name='Animation').select_related('content').order_by('-added_on').distinct()
+
     return render(request, 'core/list_page.html', {
         'items': [item.content for item in watchlist_items],
         'type': 'Series',
@@ -336,18 +340,17 @@ def animated_list(request):
     profile_id = request.session.get('profile_id')
     if not profile_id:
         return redirect('login')
-    
     try:
         profile = Profile.objects.get(id=profile_id)
     except Profile.DoesNotExist:
         return redirect('login')
-    
-    # Get user's watchlist for animated shows only
+    # Only series with Animation genre
     watchlist_items = Watchlist.objects.filter(
         profile=profile,
-        content__content_type='animatedshow'
-    ).select_related('content').order_by('-added_on')
-    
+        content__content_type='series',
+        content__genres__name='Animation'
+    ).select_related('content').order_by('-added_on').distinct()
+
     return render(request, 'core/list_page.html', {
         'items': [item.content for item in watchlist_items],
         'type': 'Animated',
@@ -428,6 +431,11 @@ def content_detail(request, pk):
     content = get_object_or_404(BaseContent, pk=pk)
     tmdb_data = None
     runtime = None
+    videos = []
+    seasons = []
+    cast = []
+    crew = []
+    grouped_staff = []
     if content.content_type in ['movie', 'series', 'animatedshow'] and content.tmdb_id:
         tmdb_type = 'movie' if content.content_type == 'movie' else 'tv'
         api_key = settings.TMDB_API_KEY
@@ -440,10 +448,40 @@ def content_detail(request, pk):
                 hours = minutes // 60
                 minutes = minutes % 60
                 runtime = f"{hours}h {minutes}m" if hours else f"{minutes}m"
+            # Fetch extra TMDB data for series/animatedshow
+            if tmdb_type == 'tv':
+                # Credits
+                credits_url = f'https://api.themoviedb.org/3/tv/{content.tmdb_id}/credits?api_key={api_key}'
+                credits_resp = requests.get(credits_url)
+                credits = credits_resp.json() if credits_resp.status_code == 200 else {}
+                cast = credits.get('cast', [])
+                crew = credits.get('crew', [])
+                grouped_staff = group_staff_by_person(crew)
+                # Videos
+                videos_url = f'https://api.themoviedb.org/3/tv/{content.tmdb_id}/videos?api_key={api_key}'
+                videos_resp = requests.get(videos_url)
+                videos = videos_resp.json().get('results', []) if videos_resp.status_code == 200 else []
+                # Seasons/Episodes
+                seasons = fetch_tmdb_seasons_and_episodes(content.tmdb_id)
+            elif tmdb_type == 'movie':
+                # Credits
+                credits_url = f'https://api.themoviedb.org/3/movie/{content.tmdb_id}/credits?api_key={api_key}'
+                credits_resp = requests.get(credits_url)
+                credits = credits_resp.json() if credits_resp.status_code == 200 else {}
+                cast = credits.get('cast', [])
+                crew = credits.get('crew', [])
+                grouped_staff = group_staff_by_person(crew)
+                # Videos
+                videos_url = f'https://api.themoviedb.org/3/movie/{content.tmdb_id}/videos?api_key={api_key}'
+                videos_resp = requests.get(videos_url)
+                videos = videos_resp.json().get('results', []) if videos_resp.status_code == 200 else []
+                # Movies don't have seasons
+    else:
+        # fallback to local DB data for characters/staff
+        cast = content.characters.all().prefetch_related('voice_actors')
+        grouped_staff = content.staff.all()
 
     related_entries = ContentRelation.objects.filter(from_content=content).select_related('to_content')
-    characters = content.characters.all().prefetch_related('voice_actors')
-    staff = content.staff.all()
     themes = content.themes.all()
 
     # Fetch user's Watchlist entry if logged in
@@ -452,7 +490,7 @@ def content_detail(request, pk):
     if profile_id:
         try:
             profile = Profile.objects.get(pk=profile_id)
-            watchlist_entry, created = Watchlist.objects.get_or_create(profile=profile, content=content)
+            watchlist_entry = Watchlist.objects.filter(profile=profile, content=content).first()
         except Profile.DoesNotExist:
             pass
 
@@ -469,9 +507,11 @@ def content_detail(request, pk):
         'content': content,
         'tmdb_data': tmdb_data,
         'related_entries': related_entries,
-        'characters': characters,
-        'staff': staff,
+        'characters': cast,
+        'staff': grouped_staff,
         'themes': themes,
+        'videos': videos,
+        'seasons': seasons,
         'watchlist_entry': watchlist_entry,
         'status_choices': status_choices,
         'score_labels': score_labels,
@@ -1061,7 +1101,7 @@ def tmdb_series_detail(request, tmdb_id):
     if content and profile_id:
         try:
             profile = Profile.objects.get(pk=profile_id)
-            watchlist_entry, created = Watchlist.objects.get_or_create(profile=profile, content=content)
+            watchlist_entry = Watchlist.objects.filter(profile=profile, content=content).first()
         except Profile.DoesNotExist:
             pass
         status_choices = Watchlist._meta.get_field('status').choices
@@ -1114,7 +1154,7 @@ def tmdb_movie_detail(request, tmdb_id):
     if content and profile_id:
         try:
             profile = Profile.objects.get(pk=profile_id)
-            watchlist_entry, created = Watchlist.objects.get_or_create(profile=profile, content=content)
+            watchlist_entry = Watchlist.objects.filter(profile=profile, content=content).first()
         except Profile.DoesNotExist:
             pass
         status_choices = Watchlist._meta.get_field('status').choices
@@ -1187,7 +1227,7 @@ def import_tmdb_content(request):
         # Also ensure a Watchlist entry exists for this user
         if profile_id:
             profile = Profile.objects.get(pk=profile_id)
-            Watchlist.objects.get_or_create(profile=profile, content=content, defaults={'status': 'plan'})
+            Watchlist.objects.get_or_create(profile=profile, content=content, defaults={'status': 'plan_to_watch'})
         return redirect('content_detail', pk=content.pk)
 
     api_key = settings.TMDB_API_KEY
@@ -1226,7 +1266,21 @@ def import_tmdb_content(request):
     # Create Watchlist entry for this user
     if profile_id:
         profile = Profile.objects.get(pk=profile_id)
-        Watchlist.objects.get_or_create(profile=profile, content=content, defaults={'status': 'plan'})
+        Watchlist.objects.get_or_create(profile=profile, content=content, defaults={'status': 'plan_to_watch'})
 
     messages.success(request, f'Imported "{title}" to your library and added to your list!')
     return redirect('content_detail', pk=content.pk)
+
+@require_POST
+def add_to_list(request, content_id):
+    profile_id = request.session.get('profile_id')
+    if not profile_id:
+        return redirect('login')
+    try:
+        profile = Profile.objects.get(pk=profile_id)
+        content = BaseContent.objects.get(pk=content_id)
+    except (Profile.DoesNotExist, BaseContent.DoesNotExist):
+        return redirect('content_detail', pk=content_id)
+    # Create watchlist entry if not exists
+    Watchlist.objects.get_or_create(profile=profile, content=content)
+    return redirect('content_detail', pk=content_id)
