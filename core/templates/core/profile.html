@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load humanize %}
 {% block title %}{{ profile.username }}'s Profile - MyMovieList{% endblock %}
 
 {% block content %}
@@ -43,9 +44,9 @@
         {% endif %}
 
         <!-- Statistics and Last Updates MAL-style -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Anime Stats -->
-                <div>
+            <div>
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-lg font-bold text-white">Content Stats</h2>
                     <a href="#" class="text-xs text-sky-400 hover:underline">All Content Stats</a>
@@ -54,8 +55,12 @@
                     <span>Days: <span class="font-bold">{{ stats.days }}</span></span>
                     <span>Mean Score: <span class="font-bold">{{ stats.mean_score }}</span></span>
                 </div>
-                <div class="w-full h-4 bg-gray-700 rounded overflow-hidden mb-2">
-                    <div class="h-full bg-blue-500" style="width: {{ stats.completed_percent }}%;"></div>
+                <div class="w-full h-4 bg-gray-700 rounded overflow-hidden mb-2 flex">
+                    <div class="h-full bg-green-500" style="width: {{ percentages.watching }}%"></div>
+                    <div class="h-full bg-blue-500" style="width: {{ percentages.completed }}%"></div>
+                    <div class="h-full bg-yellow-400" style="width: {{ percentages.on_hold }}%"></div>
+                    <div class="h-full bg-red-500" style="width: {{ percentages.dropped }}%"></div>
+                    <div class="h-full bg-gray-400" style="width: {{ percentages.plan_to_watch }}%"></div>
                 </div>
                 <div class="flex flex-row text-xs gap-x-8">
                     <!-- Left column: Statuses -->
@@ -99,28 +104,34 @@
             <!-- Last Anime Updates -->
             <div>
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-lg font-bold text-white">Last Anime Updates</h2>
+                    <h2 class="text-lg font-bold text-white">Last Content Updates</h2>
                     <a href="#" class="text-xs text-sky-400 hover:underline">Content History</a>
-        </div>
-            <div class="space-y-4">
-                {% for update in last_content_updates %}
-                <div class="flex items-center gap-4">
-                        <img src="{{ update.poster_url }}" alt="{{ update.title }}"
-                            class="w-12 h-16 object-cover rounded">
-                    <div>
-                        <div class="text-white font-semibold">{{ update.title }}</div>
-                            <div class="text-gray-400 text-xs">{{ update.status }} • {{ update.updated_at|date:'M d, Y
-                                H:i' }}</div>
-                    </div>
                 </div>
-                {% empty %}
-                <div class="text-gray-400">No recent updates.</div>
-                {% endfor %}
+                <div>
+                    {% for update in last_content_updates|slice:':3' %}
+                    <div class="flex items-center gap-4 py-1">
+                        <img src="{{ update.content.poster_url }}" alt="{{ update.content.title }}"
+                            class="w-12 h-16 object-cover rounded">
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center">
+                                <div class="text-white font-semibold">{{ update.content.title }}</div>
+                                <div class="text-gray-400 text-xs">
+                                    {{ update.added_on|naturaltime }}
+                                </div>
+                            </div>
+                            <div class="text-gray-400 text-xs">
+                                {{ update.get_status_display }}{% if update.progress %} - {{ update.progress }}{% endif %}{% if update.score %} · Scored {{ update.score }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-gray-400">No recent updates.</div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
-        </div>
         <!-- Manga Stats and Last Manga Updates MAL-style -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
             <!-- Manga Stats -->
             <div>
                 <div class="flex justify-between items-center mb-2">
@@ -176,23 +187,23 @@
             <!-- Last Manga Updates -->
             <div>
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-lg font-bold text-white">Last Manga Updates</h2>
+                    <h2 class="text-lg font-bold text-white">Last Comic Updates</h2>
                     <a href="#" class="text-xs text-purple-400 hover:underline">Comic History</a>
                 </div>
-            <div class="space-y-4">
-                {% for update in last_comic_updates %}
-                <div class="flex items-center gap-4">
+                <div class="space-y-4">
+                    {% for update in last_comic_updates %}
+                    <div class="flex items-center gap-4">
                         <img src="{{ update.poster_url }}" alt="{{ update.title }}"
                             class="w-12 h-16 object-cover rounded">
-                    <div>
-                        <div class="text-white font-semibold">{{ update.title }}</div>
-                            <div class="text-gray-400 text-xs">{{ update.status }} • {{ update.updated_at|date:'M d, Y
+                        <div>
+                            <div class="text-white font-semibold">{{ update.title }}</div>
+                            <div class="text-gray-400 text-xs">{{ update.status }} • {{ update.added_on|date:'M d, Y
                                 H:i' }}</div>
+                        </div>
                     </div>
-                </div>
-                {% empty %}
-                <div class="text-gray-400">No recent comic updates.</div>
-                {% endfor %}
+                    {% empty %}
+                    <div class="text-gray-400">No recent comic updates.</div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

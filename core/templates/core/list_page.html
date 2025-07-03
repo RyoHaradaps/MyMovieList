@@ -123,36 +123,40 @@
             <tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors">
                 <td class="px-4 py-2 text-center">{{ forloop.counter }}</td>
                 <td class="px-4 py-2 text-center">
-                    {% if item.tmdb_id %}
-                    {% if item.content_type == 'movie' %}
-                    <a href="{% url 'tmdb_movie_detail' item.tmdb_id %}">
+                    {% if item.content.tmdb_id %}
+                    {% if item.content.content_type == 'movie' %}
+                    <a href="{% url 'tmdb_movie_detail' item.content.tmdb_id %}">
                         {% else %}
-                        <a href="{% url 'tmdb_series_detail' item.tmdb_id %}">
+                        <a href="{% url 'tmdb_series_detail' item.content.tmdb_id %}">
                             {% endif %}
-                            <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                            <img src="{{ item.content.poster_url }}" alt="{{ item.content.title }}"
                                 class="w-12 h-16 object-cover rounded mx-auto">
                         </a>
                         {% else %}
-                        <a href="{% url 'content_detail' item.pk %}">
-                            <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                        <a href="{% url 'content_detail' item.content.pk %}">
+                            <img src="{{ item.content.poster_url }}" alt="{{ item.content.title }}"
                                 class="w-12 h-16 object-cover rounded mx-auto">
                         </a>
                         {% endif %}
                 </td>
                 <td class="px-4 py-2 font-semibold text-center">
-                    {% if item.tmdb_id %}
-                    {% if item.content_type == 'movie' %}
-                    <a href="{% url 'tmdb_movie_detail' item.tmdb_id %}" class="hover:underline">{{ item.title }}</a>
+                    {% if item.content.tmdb_id %}
+                        {% if item.content.content_type == 'movie' %}
+                        <a href="{% url 'tmdb_movie_detail' item.content.tmdb_id %}" class="hover:underline">{{ item.content.title }}</a>
+                        {% else %}
+                        <a href="{% url 'tmdb_series_detail' item.content.tmdb_id %}" class="hover:underline">{{ item.content.title }}</a>
+                        {% endif %}
                     {% else %}
-                    <a href="{% url 'tmdb_series_detail' item.tmdb_id %}" class="hover:underline">{{ item.title }}</a>
-                    {% endif %}
-                    {% else %}
-                    <a href="{% url 'content_detail' item.pk %}" class="hover:underline">{{ item.title }}</a>
+                    <a href="{% url 'content_detail' item.content.pk %}" class="hover:underline">{{ item.content.title }}</a>
                     {% endif %}
                 </td>
-                <td class="px-4 py-2 text-center">-</td>
-                <td class="px-4 py-2 text-center">{{ item.get_content_type_display }}</td>
-                <td class="px-4 py-2 text-center">-</td>
+                <td class="px-4 py-2 text-center">
+                    {% if item.score %}{{ item.score }}{% else %}-{% endif %}
+                </td>
+                <td class="px-4 py-2 text-center">{{ item.content.get_content_type_display }}</td>
+                <td class="px-4 py-2 text-center">
+                    {% if item.status == 'completed' %}1 / 1{% else %}- / 1{% endif %}
+                </td>
                 <td class="px-4 py-2 text-center">
                     <a href="#" class="text-sky-400 hover:underline">Edit</a>
                 </td>

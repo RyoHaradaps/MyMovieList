@@ -60,8 +60,8 @@ class Watchlist(models.Model):
         ('completed', 'Completed'),
         ('on_hold', 'On-Hold'),
         ('dropped', 'Dropped'),
-        ('plan', 'Plan to Watch/Read'),
-    ], default='plan')
+        ('plan_to_watch', 'Plan to Watch/Read'),
+    ], default='plan_to_watch')
     score = models.IntegerField(null=True, blank=True)
     progress = models.IntegerField(default=0)
     review = models.TextField(blank=True)

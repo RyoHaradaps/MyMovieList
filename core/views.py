@@ -219,7 +219,7 @@ def profile(request, username):
         'completed': stats_qs.filter(status='completed').count(),
         'on_hold': stats_qs.filter(status='on_hold').count(),
         'dropped': stats_qs.filter(status='dropped').count(),
-        'plan_to_watch': stats_qs.filter(status='plan').count(),
+        'plan_to_watch': stats_qs.filter(status='plan_to_watch').count(),
         'total': stats_qs.count(),
         'mean_score': round(stats_qs.filter(score__isnull=False).aggregate(models.Avg('score'))['score__avg'] or 0, 2),
         'rewatched': stats_qs.aggregate(models.Sum('rewatched'))['rewatched__sum'] or 0,
@@ -235,7 +235,7 @@ def profile(request, username):
         'completed': comic_qs.filter(status='completed').count(),
         'on_hold': comic_qs.filter(status='on_hold').count(),
         'dropped': comic_qs.filter(status='dropped').count(),
-        'plan_to_read': comic_qs.filter(status='plan').count(),
+        'plan_to_read': comic_qs.filter(status='plan_to_read').count(),
         'total': comic_qs.count(),
         'mean_score': round(comic_qs.filter(score__isnull=False).aggregate(models.Avg('score'))['score__avg'] or 0, 2),
         'reread': comic_qs.aggregate(models.Sum('reread'))['reread__sum'] or 0,
@@ -245,12 +245,19 @@ def profile(request, username):
     comic_stats['days'] = round((comic_stats['chapters'] / 24), 1) if comic_stats['chapters'] else 0  # assuming 1 chapter = 1 hour
 
     # Last content updates (not comics)
-    last_content_updates = stats_qs.order_by('-added_on')[:5]
-    last_content_updates = [w.content for w in last_content_updates]
+    last_content_updates = stats_qs.order_by('-added_on')[:3]
 
     # Last comic updates
     last_comic_updates = comic_qs.order_by('-added_on')[:5]
-    last_comic_updates = [w.content for w in last_comic_updates]
+
+    total = stats['total'] or 1  # avoid division by zero
+    percentages = {
+        'watching': int((stats['watching'] / total) * 100),
+        'completed': int((stats['completed'] / total) * 100),
+        'on_hold': int((stats['on_hold'] / total) * 100),
+        'dropped': int((stats['dropped'] / total) * 100),
+        'plan_to_watch': int((stats['plan_to_watch'] / total) * 100),
+    }
 
     context = {
         'profile': profile,
@@ -259,6 +266,7 @@ def profile(request, username):
         'comic_stats': comic_stats,
         'last_content_updates': last_content_updates,
         'last_comic_updates': last_comic_updates,
+        'percentages': percentages,
     }
     return render(request, 'core/profile.html', context)
 
@@ -308,7 +316,7 @@ def movie_list(request):
         watchlist_items = watchlist_items.filter(status=status)
 
     return render(request, 'core/list_page.html', {
-        'items': [item.content for item in watchlist_items],
+        'items': watchlist_items,
         'type': 'Movie',
         'profile': profile,
         'is_watchlist': True,
