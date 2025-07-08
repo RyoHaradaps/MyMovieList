@@ -7,44 +7,7 @@
     <p class="text-lg text-gray-400 mb-4">Track your movies, series, anime, and comics — all in one place!</p>
 </div>
 
-{% if continue_watching %}
-<h2 class="text-2xl font-semibold mt-6 mb-2">Continue Watching</h2>
-<div class="relative group mb-8">
-    <button id="carousel-continue-watching-left"
-        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
-        aria-label="Scroll left">&#8592;</button>
-    <div id="carousel-continue-watching"
-        class="flex overflow-x-auto gap-4 pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
-        {% for item in continue_watching %}
-        <div
-            class="bg-gray-800 rounded-lg shadow-md flex-shrink-0 w-48 snap-start border border-gray-700 hover:scale-105 transition-transform overflow-hidden">
-            <a href="{% url 'content_detail' item.pk %}">
-                <div class="relative">
-                    <img src="{{ item.poster_url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
-                    <div
-                        class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        {{ item.release_year }}
-                    </div>
-                    {% if item.rating %}
-                    <div
-                        class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                        <i class="fa-solid fa-star text-yellow-400"></i>
-                        <span>{{ item.rating|floatformat:1 }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="p-3">
-                    <div class="font-bold text-blue-300 whitespace-normal text-sm min-h-[2.5rem]">{{ item.title }}</div>
-                </div>
-            </a>
-        </div>
-        {% endfor %}
-    </div>
-    <button id="carousel-continue-watching-right"
-        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 text-white rounded-full p-2 shadow-lg hidden group-hover:flex transition-opacity duration-200"
-        aria-label="Scroll right">&#8594;</button>
-</div>
-{% endif %}
+
 
 {% for carousel in recommended_carousels %}
 <h2 class="text-2xl font-semibold mt-6 mb-2">{{ carousel.title }}</h2>

@@ -338,7 +338,7 @@ def series_list(request):
     ).exclude(content__genres__name='Animation').select_related('content').order_by('-added_on').distinct()
 
     return render(request, 'core/list_page.html', {
-        'items': [item.content for item in watchlist_items],
+        'items': watchlist_items,
         'type': 'Series',
         'profile': profile,
         'is_watchlist': True,
@@ -360,7 +360,7 @@ def animated_list(request):
     ).select_related('content').order_by('-added_on').distinct()
 
     return render(request, 'core/list_page.html', {
-        'items': [item.content for item in watchlist_items],
+        'items': watchlist_items,
         'type': 'Animated',
         'profile': profile,
         'is_watchlist': True,
@@ -383,7 +383,7 @@ def anime_list(request):
     ).select_related('content').order_by('-added_on')
     
     return render(request, 'core/list_page.html', {
-        'items': [item.content for item in watchlist_items],
+        'items': watchlist_items,
         'type': 'Anime',
         'profile': profile,
         'is_watchlist': True,
@@ -406,7 +406,7 @@ def manga_list(request):
     ).select_related('content').order_by('-added_on')
     
     return render(request, 'core/list_page.html', {
-        'items': [item.content for item in watchlist_items],
+        'items': watchlist_items,
         'type': 'Manga',
         'profile': profile,
         'is_watchlist': True,
@@ -429,7 +429,7 @@ def comic_list(request):
     ).select_related('content').order_by('-added_on')
     
     return render(request, 'core/list_page.html', {
-        'items': [item.content for item in watchlist_items],
+        'items': watchlist_items,
         'type': 'Comic',
         'profile': profile,
         'is_watchlist': True,

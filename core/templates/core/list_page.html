@@ -133,21 +133,30 @@
                                 class="w-12 h-16 object-cover rounded mx-auto">
                         </a>
                         {% else %}
+                        {% if item.content.pk %}
                         <a href="{% url 'content_detail' item.content.pk %}">
                             <img src="{{ item.content.poster_url }}" alt="{{ item.content.title }}"
                                 class="w-12 h-16 object-cover rounded mx-auto">
                         </a>
+                        {% else %}
+                        <img src="{{ item.content.poster_url }}" alt="{{ item.content.title }}"
+                            class="w-12 h-16 object-cover rounded mx-auto opacity-50">
+                        {% endif %}
                         {% endif %}
                 </td>
                 <td class="px-4 py-2 font-semibold text-center">
                     {% if item.content.tmdb_id %}
-                        {% if item.content.content_type == 'movie' %}
-                        <a href="{% url 'tmdb_movie_detail' item.content.tmdb_id %}" class="hover:underline">{{ item.content.title }}</a>
-                        {% else %}
-                        <a href="{% url 'tmdb_series_detail' item.content.tmdb_id %}" class="hover:underline">{{ item.content.title }}</a>
-                        {% endif %}
+                    {% if item.content.content_type == 'movie' %}
+                    <a href="{% url 'tmdb_movie_detail' item.content.tmdb_id %}" class="hover:underline">{{ item.content.title }}</a>
                     {% else %}
+                    <a href="{% url 'tmdb_series_detail' item.content.tmdb_id %}" class="hover:underline">{{ item.content.title }}</a>
+                    {% endif %}
+                    {% else %}
+                    {% if item.content.pk %}
                     <a href="{% url 'content_detail' item.content.pk %}" class="hover:underline">{{ item.content.title }}</a>
+                    {% else %}
+                    <span class="text-gray-400">{{ item.content.title }}</span>
+                    {% endif %}
                     {% endif %}
                 </td>
                 <td class="px-4 py-2 text-center">
